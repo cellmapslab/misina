@@ -15,6 +15,10 @@ within.seed <- function(snps, mir.bs) {
   findOverlaps(snps, flank(resize(mir.bs, 1, fix='end'), 6, start=T))
 }
 
+snp.relative.pos <- function(snps, mir.bs) {
+  abs(start(snps) - start(resize(mir.bs, 1, fix='end'))) + 1
+}
+
 merge.granges.aggressively <- function(meta.columns, ...) {
   gr <- list(...)
   gr.lengths <- sapply(gr, length)
@@ -35,7 +39,7 @@ merge.granges.aggressively <- function(meta.columns, ...) {
   res
 }
 
-extend.with.LD <- function(snps.df, dataset=c('1kg', 'hapmap'), 
+extend.with.LD <- function(snps.df, dataset=c('1kg', 'hapmap'),
                            aggregate.results=T, self.snp.label=NULL, ...) {
 
   dataset <- match.arg(dataset)
@@ -79,7 +83,7 @@ extend.with.LD <- function(snps.df, dataset=c('1kg', 'hapmap'),
   CAD.proxy.df[na.rows,'Proxy']=CAD.proxy.df[na.rows,'SNPs']
   CAD.proxy.df[na.rows,'Distance']=0
   CAD.proxy.df[na.rows,'R2']=1
-  
+
   if(!is.null(self.snp.label)) {
     #do not set original snp id to empty, otherwise it would vanish in
     #the aggregation step, and # of snps in IsProxyOf and those in t.stat column
@@ -324,7 +328,7 @@ generate.final.table <- function(targets.gr, CAD.snps.gr, snp.mir.overlap.matrix
   final.table <- mcols(overlapping.targets.gr)
   final.table$mir.target.pos <- paste(seqnames(overlapping.targets.gr),
                                       start(overlapping.targets.gr),
-                                      end(overlapping.targets.gr), 
+                                      end(overlapping.targets.gr),
                                       strand(overlapping.targets.gr),
                                       sep = ':')
 
@@ -392,16 +396,27 @@ generate.final.table <- function(targets.gr, CAD.snps.gr, snp.mir.overlap.matrix
   #add one column for SNPs in miR seed regions
   snps.in.seed <- within.seed(overlapping.snps, overlapping.targets.gr)
   snp.seed.df <- data.frame(SNP=overlapping.snps[queryHits(snps.in.seed)]$SNP,
-                            mir=overlapping.targets.gr[subjectHits(snps.in.seed)]$mir, 
+                            mir=overlapping.targets.gr[subjectHits(snps.in.seed)]$mir,
                             SNP.bwn.2.7=T,
                             stringsAsFactors = F)
-  
-  final.table <- merge(final.table, snp.seed.df, by.x=c('SNP', 'mir'), 
+  final.table <- merge(final.table, snp.seed.df, by.x=c('SNP', 'mir'),
                        by.y=c('SNP', 'mir'), all.x=T)
-  
-  #move SNP.bwn.2.7 column next to mir column
+  #move new column next to mir column
   final.table <- final.table[, c(1:12, length(final.table), 13:(length(final.table)-1))]
-  
+  final.table$SNP.bwn.2.7[is.na(final.table$SNP.bwn.2.7)] <- F
+
+
+  #add one more column for SNP pos
+  snps.rel.pos <- snp.relative.pos(overlapping.snps, overlapping.targets.gr)
+  snp.pos.df <- data.frame(SNP=overlapping.snps$SNP,
+                            mir=overlapping.targets.gr$mir,
+                            SNP.position.in.miR=snps.rel.pos,
+                            stringsAsFactors = F)
+  final.table <- merge(final.table, snp.pos.df, by.x=c('SNP', 'mir'),
+                       by.y=c('SNP', 'mir'), all.x=T)
+  #move new column next to mir column
+  final.table <- final.table[, c(1:13, length(final.table), 14:(length(final.table)-1))]
+
   if (aggregate.results) {
     #merge duplicate columns through paste0(..., collapse=',')
     final.table <- aggregate(final.table,
@@ -409,6 +424,6 @@ generate.final.table <- function(targets.gr, CAD.snps.gr, snp.mir.overlap.matrix
                              function(x)paste0(unique(x), collapse=','))
     final.table <- final.table[,-(1:2)] #exclude group col.
   }
-  
+
   final.table
 }
