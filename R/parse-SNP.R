@@ -106,6 +106,9 @@ get.hg19.positions2 <- function(CAD.SNP.df, dbSNP.file) {
   ldb <- new(LevelDB, dbSNP.file)
   query.snps <- CAD.SNP.df$SNP
   dbsnp <- ldb$Get(query.snps)
+  rm(ldb) #close connection properly
+  gc()
+
   m <- sapply(dbsnp, anyNA)
   dbsnp <- as.data.frame(t(sapply(dbsnp[!m], rbind)), stringsAsFactors=F)
   dbsnp$SNP <- query.snps[!m]
