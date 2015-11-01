@@ -95,6 +95,8 @@ ultimate <- aggregate(ultimate,
 ultimate <- ultimate[,-(1:2)]
 
 ultimate <- ultimate[order(ultimate$SNP),]
+#add one more column denoting if the target gene == eGene
+ultimate$eQTL.Gene.Same.as.Target.gene <- toupper(ultimate$gene) %in% toupper(ultimate$eQTL.Gene)
 write.table(ultimate, '~/Risk-SNPs-within-miR-BS-corrected-eQTL.tsv', row.names=F, sep='\t')
 
 
