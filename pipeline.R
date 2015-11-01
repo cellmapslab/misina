@@ -88,7 +88,7 @@ final.eqtl$eQTL.IsProxyOf[final.eqtl$eQTL.IsProxyOf == ''] <- 'direct'
 ultimate <- merge(result.table, final.eqtl, all.x=T, by='SNP')
 ucol <- ncol(ultimate)
 #move eqtl columns towards the beginning
-ultimate <- ultimate[, c(1:8, (ucol-6):ucol, 9:(ucol-7))]
+ultimate <- select(ultimate, SNP:mir.target.db, starts_with('eQTL'), everything())
 ultimate <- aggregate(ultimate,
                       list(SNP=ultimate$SNP, MIRR=ultimate$mir),
                       function(x)paste(unique(x[x!='']), collapse=','))
