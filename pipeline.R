@@ -73,7 +73,7 @@ visualize(unique(mir.targets.gr), CAD.SNP.gr, snp.mir.overlap.matrix)
 # eQTL --------------------------------------------------------------------
 
 extended.eqtl <- readRDS('data/processed/eQTL-mono-macro-with-LD.Rds')
-extended.eqtl <- extended.eqtl[,c('SNP', 'IsProxyOf', 't.stat', 'p.value', 'FDR', 'gene', 'eQTL.source', 'cell')]
+extended.eqtl <- extended.eqtl[,c('SNP', 'IsProxyOf', 't.stat', 'p.value', 'FDR', 'gene', 'eQTL.source', 'eQTL.tissue')]
 names(extended.eqtl) <- c('SNP', 'eQTL.IsProxyOf', 'eQTL.tstat', 'eQTL.pvalue', 'eQTL.FDR', 'eQTL.Gene', 'eQTL.Source', 'eQTL.Tissue')
 
 gtex.eqtl <- readRDS('data/processed/GTEx.Rds')
