@@ -96,7 +96,12 @@ ultimate <- ultimate[,-(1:2)]
 
 ultimate <- ultimate[order(ultimate$SNP),]
 #add one more column denoting if the target gene == eGene
-ultimate$eQTL.Gene.Same.as.Target.gene <- toupper(ultimate$gene) %in% toupper(ultimate$eQTL.Gene)
+ultimate$eQTL.Gene.Same.as.Target.gene <- simplify2array(Map(function(gene, egene){
+  any(toupper(gene) == strsplit(toupper(egene), ',')[[1]])},
+  ultimate$gene, ultimate$eQTL.Gene))
+
+ultimate <- select(ultimate, SNP:mir.target.db, starts_with('eQTL'), everything())
+
 write.table(ultimate, '~/Risk-SNPs-within-miR-BS-corrected-eQTL.tsv', row.names=F, sep='\t')
 
 
