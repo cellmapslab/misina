@@ -44,7 +44,7 @@ total.snps <- total.snps[,-1]
 
 #WARNING!!!
 #dbSNP and Starbase genome assemblies must match
-CAD.SNP.df <- extend.with.LD(total.snps, rsquare=0.8, self.snp.label = 'risk.snp')
+CAD.SNP.df <- extend.with.LD(total.snps, rsquare=0.78, self.snp.label = 'risk.snp')
 CAD.SNP.gr <- get.hg19.positions2(CAD.SNP.df, dbSNP.file = dbsnp.file)
 
 #get p-values from a separate file
