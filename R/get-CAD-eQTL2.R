@@ -41,6 +41,7 @@ if (nrow(probe2gene) != length(unique(eqtl_cad$gene))) {
 eqtl_cad <- merge(eqtl_cad, probe2gene, by.x = 'gene', by.y = 'IlluminaID', all.y = T) #merge only those are mapped
 
 library(dplyr)
+library(magrittr)
 eqtl_cad_tbl <- eqtl_cad %>% tbl_df %>% dplyr::select(-gene) %>% rename(gene=SymbolReannotated)
 
 #select only significant associations
