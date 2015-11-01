@@ -62,7 +62,7 @@ if(length(snp.mir.overlap.matrix) == 0)
 
 result.table <- generate.final.table(unique(mir.targets.gr),
                                      CAD.SNP.gr,
-                                     snp.mir.overlap.matrix, annotate=F)
+                                     snp.mir.overlap.matrix, annotate=T)
 
 
 # visualize the results ---------------------------------------------------
