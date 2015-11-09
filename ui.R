@@ -18,7 +18,7 @@ shinyUI(
                                    h2('Input SNP List'),
                                    fluidRow(
                                      column(6,
-                                            h4('Enter SNP ids (separated by space or newline)'),
+                                            h4('Enter SNP ids (separated by space, newline or comma)'),
                                             #tags$div(strong("SNP ids")),
                                             tags$textarea(id="snp.id.textarea", rows=8, style="width:100%"),
                                             helpText('or select one of GRASP risk SNPs below'),

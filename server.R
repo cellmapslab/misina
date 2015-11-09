@@ -7,6 +7,7 @@ source('R/snipe.R')
 library(dplyr)
 library(RcppLevelDB)
 library(data.table)
+library(uuid)
 
 # input data files
 dbsnp.file <- 'data/processed/dbsnp.leveldb'
@@ -17,6 +18,14 @@ miranda.gr <- readRDS('data/processed/miranda.Rds')
 mir.targets.gr <- merge.granges.aggressively(meta.columns=list(mir.target.db=c('Starbase', 'TargetScan', 'miranda')),
                                              starbase.gr, targetscan.gr, miranda.gr)
 
+
+generate.uuid <- function() {
+  paste0(strsplit(UUIDgenerate(), '-')[[1]], collapse = '')
+}
+
+process <- function(inputs, id) {
+  
+}
 
 #set file upload limit to 35M
 options(shiny.maxRequestSize=35*1024^2)
@@ -52,6 +61,34 @@ shinyServer(function(input, output, session) {
     else
       return(FALSE)
   })
+  
+  re.snp.list <- reactive({
+
+    snp.area <- input$snp.textarea
+    
+    if (snp.area != '')
+      return(strsplit(snp.area, '\\s+|,')[[1]])
+    
+    snp.df <- re.file.data.frame()
+    snp.col <- re.selected.column()
+    snp.col.valid <- re.is.selected.column.valid()
+
+    if (!snp.col.valid)
+      return(FALSE)
+
+    return(as.vector(snp.df[,snp.col]))
+    
+    })
+  
+  re.get.all.inputs <- reactive({
+    
+    return(list(snp.list = re.snp.list(),
+                ld.cutoff = input$ld.slider,
+                ld.population = input$ld.population,
+                mir.target.db = input$mir.target.db
+                ))
+    
+    })
 
   output$snp.table <- DT::renderDataTable({
     if(is.null(re.file.data.frame()))
@@ -94,6 +131,8 @@ shinyServer(function(input, output, session) {
     }
   })
 
+# main submit function ----------------------------------------------------
+
   observeEvent(input$submit.button, {
     check.res <- check.input()
     if(!check.res[[1]]) {
@@ -114,7 +153,7 @@ shinyServer(function(input, output, session) {
 
     if(input$snp.id.textarea != ''){
       #check if snp ids are proper
-      if (!all(substr(strsplit(input$snp.id.textarea, ',', fixed = T)[[1]], 1,2) == 'rs'))
+      if (!all(substr(strsplit(input$snp.id.textarea, '\\s+|,')[[1]], 1,2) == 'rs'))
         return(list(FALSE, 'SNP ids are not valid!'))
     }
 
@@ -124,8 +163,8 @@ shinyServer(function(input, output, session) {
 
     return(list(TRUE, ''))
   })
-
-  #  Results section --------------------------------------------------------
+  
+#  Results section --------------------------------------------------------
 
 #    re.ld.data.frame <- reactive({
 #
