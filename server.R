@@ -118,7 +118,7 @@ shinyServer(function(input, output, session) {
         return(list(FALSE, 'SNP ids are not valid!'))
     } 
     
-    if (!re.is.selected.column.valid()) {
+    if (input$snp.id.textarea == '' && !re.is.selected.column.valid()) {
         return(list(FALSE, 'Select a valid SNP column for the given file'))
     }
     
