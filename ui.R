@@ -2,27 +2,27 @@
 library(shiny)
 
 shinyUI(
-  
+
   navbarPage("miR-SNP", id='navbar.panel',
              tabPanel("Input",
-                      
+
                       fluidPage(
-                        
+
                         # Application title
                         titlePanel("SNP@miR"),
                         br(),
-                        
+
                         fluidRow(
                           column(7,
                                  wellPanel(
                                    h2('Input SNP List'),
                                    fluidRow(
-                                     column(6, 
+                                     column(6,
                                             h4('Enter one SNP id per line'),
                                             #tags$div(strong("SNP ids")),
                                             tags$textarea(id="snp.id.textarea", rows=8, style="width:100%"),
                                             helpText('or select one of GRASP risk SNPs below'),
-                                            selectInput('grasp.selection', "Risk SNPs", 
+                                            selectInput('grasp.selection', "Risk SNPs",
                                                         "Grasp",
                                                         selectize = F)
                                      ),
@@ -41,24 +41,24 @@ shinyUI(
                                             br(),
                                             #br(),
                                             #br(),
-                                            selectInput('snp.col.select', 'SNP column', 
+                                            selectInput('snp.col.select', 'SNP column',
                                                         "",
                                                         selectize = F)
-                                            
+
                                      )
                                    )
                                  ),
-                                 
+
                                  fluidRow(
                                    column(12,
                                           wellPanel(
                                             h2('Configuration'),
-                                            
-                                            fluidRow(    
+
+                                            fluidRow(
                                               column(6,
                                                      h4('LD Proxy Search'),
                                                      sliderInput('ld.slider', 'LD Cutoff', 0.1, 1, 0.8, 0.1),
-                                                     selectInput('ld.population', 'Population', c('African', 
+                                                     selectInput('ld.population', 'Population', c('African',
                                                                                                   'American',
                                                                                                   'European',
                                                                                                   'East Asia',
@@ -66,26 +66,26 @@ shinyUI(
                                                                  selected = 'European',
                                                                  selectize=F)
                                               ),
-                                              
-                                              
+
+
                                               column(4, offset = 1,
                                                      h4('micro-RNA Targets'),
-                                                     checkboxGroupInput('mir.target.db', 'Select Target Databases', 
+                                                     checkboxGroupInput('mir.target.db', 'Select Target Databases',
                                                                         c('TargetScan','miranda','Starbase'),
                                                                         c('TargetScan','miranda','Starbase')
                                                      )
                                               )
                                             )
                                           ))),
-                                 
+
                                  fluidRow(
                                    column(1,
                                           actionButton('submit.button', 'Submit', class='btn-primary')
                                    )
                                  )
                           ),
-                          column(5, 
-                                 
+                          column(5,
+
                                  fluidRow(
                                    column(12,
                                           DT::dataTableOutput('snp.table')
@@ -95,12 +95,12 @@ shinyUI(
                           br()
                         )
                       )),
-             
-             tabPanel('Results', 
+
+             tabPanel('Results',
                       img(src='spinner.gif', id='spinner'),
                       DT::dataTableOutput('result.table')
              ),
-             tabPanel('Help', 
+             tabPanel('Help',
                       img(src='spinner.gif', id='spinner')
              ),
              singleton(
