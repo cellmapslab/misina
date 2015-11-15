@@ -13,10 +13,10 @@ miranda.gr <- readRDS('data/processed/miranda.Rds')
 
 run.pipeline <- function(inputs) {
   
-  total.snps <- inputs$snp.list
-  ld.cutoff <- as.numeric(input$ld.cutoff)
-  ld.population <- input$ld.population
-  mir.target.db <- input$mir.target.db
+  total.snps <- data.frame(SNPs=input$snp.list, stringsAsFactors = F)
+  ld.cutoff <- as.numeric(inputs$ld.cutoff)
+  ld.population <- inputs$ld.population
+  mir.target.db <- inputs$mir.target.db
   
   mir.targets.gr <- merge.granges.aggressively(meta.columns=list(mir.target.db=c('Starbase', 'TargetScan', 'miranda')),
                                                starbase.gr, targetscan.gr, miranda.gr)

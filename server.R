@@ -68,7 +68,7 @@ shinyServer(function(input, output, session) {
   
   re.snp.list <- reactive({
     
-    snp.area <- input$snp.textarea
+    snp.area <- input$snp.id.textarea
     
     if (snp.area != '')
       return(strsplit(snp.area, '\\s+|,')[[1]])
@@ -182,9 +182,8 @@ shinyServer(function(input, output, session) {
     # close all file descriptors, apperently closeAllConnections() is
     # not working this way
     ca <- cfunction(body = 'int maxfd=sysconf(_SC_OPEN_MAX); \
-                            for(int fd=3; fd<maxfd; fd++) \
-                            close(fd);', includes='#include<unistd.h>')
-    
+                            for(int fd=3;fd<maxfd;fd++)close(fd);return 0;',
+                    includes='#include<unistd.h>')
     ca()
     
     if (!dir.exists('jobs'))
@@ -193,11 +192,14 @@ shinyServer(function(input, output, session) {
     tryCatch({
       #child node executes the rest
       source('helper.R')
-      cat(inputs)
       res <- run.pipeline(inputs)
       f <- result.file.from.id(i)
       saveRDS(res, f)
     }, error = function(e){
+      t <- traceback()
+      #humanize output of traceback()
+      cat(paste0(paste0(rev(seq_along(t)), ': '), 
+                 lapply(t, paste0, collapse='\n'), collapse='\n\n'))
       saveRDS(e, file=error.file.from.id(i))
     })
     stop()
@@ -232,15 +234,15 @@ shinyServer(function(input, output, session) {
       
       if (file.exists(error.file.from.id(i))) {
         err = readRDS(error.file.from.id(i))
-        ret = div(
-        h1('Result not found :( '),
-        p(as.character(err)))
-        return(ret)
+        output$result.page <- renderUI({
+          div(h1('An error occurred: '),
+              pre(as.character(err)))
+        })
       } else {
-      
-      output$result.page <- renderUI({
-        h1('Result is still processing ... ')
-      })
+        
+        output$result.page <- renderUI({
+          h1('Result is still processing ... ')
+        })
       }
     }
   }

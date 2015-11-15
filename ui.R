@@ -2,7 +2,7 @@
 library(shiny)
 
 shinyUI(
-  navbarPage("miR-SNP", id='navbar.panel',
+  navbarPage(a("miR-SNP", href='/'), id='navbar.panel',
              tabPanel("Input", htmlOutput('input.page')),
              
              tabPanel('Results', htmlOutput('result.page')
