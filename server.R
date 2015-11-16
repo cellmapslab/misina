@@ -1,8 +1,10 @@
 library(shiny)
 library(DT)
 library(data.table)
+library(dplyr)
 library(uuid)
 library(inline)
+library(grasp2db)
 
 generate.uuid <- function() {
   paste0(strsplit(UUIDgenerate(), '-')[[1]], collapse = '')
@@ -20,6 +22,24 @@ error.file.from.id <- function(i) {
     dir.create('jobs')
   
   paste0('jobs/error-', i, '.rds')
+}
+
+get.grasp.cat <- function() {
+  ret <- GRASP2() %>% tbl(., 'study') %>% select(PaperPhenotypeCategories) %>% distinct %>% arrange(PaperPhenotypeCategories) %>% as.data.frame %>% `[[`(.,1)
+  ret <- sort(unique(trimws(unlist(strsplit(ret, ';')))))
+  
+  as.list(ret)
+}
+
+get.grasp.phenotype <- function(ct) {
+  ret <- GRASP2() %>% tbl(., 'study') %>% select(PaperPhenotypeCategories, PaperPhenotypeDescription) %>%
+    filter_(.dots=paste0('PaperPhenotypeCategories %like% "%', ct, '%"')) %>%
+    select(PaperPhenotypeDescription) %>% distinct %>% as.data.frame %>% `[[`(., 1) %>% sort
+  
+  #"Beh\xe7et's disease" causes problems
+  Encoding(ret) <- 'latin1'
+
+  as.list(ret)
 }
 
 #set file upload limit to 35M
@@ -66,12 +86,12 @@ shinyServer(function(input, output, session) {
       return(FALSE)
   })
   
-  re.snp.list <- reactive({
+  re.snp.df <- reactive({
     
     snp.area <- input$snp.id.textarea
     
     if (snp.area != '')
-      return(strsplit(snp.area, '\\s+|,')[[1]])
+      return(data.frame(SNPs=strsplit(snp.area, '\\s+|,')[[1]], stringsAsFactors = F))
     
     snp.df <- re.file.data.frame()
     snp.col <- re.selected.column()
@@ -80,7 +100,8 @@ shinyServer(function(input, output, session) {
     if (!snp.col.valid)
       return(FALSE)
     
-    return(as.vector(snp.df[,snp.col]))
+    colnames(snp.df)[snp.col] <- 'SNPs'
+    return(snp.df)
     
   })
   
@@ -125,6 +146,22 @@ shinyServer(function(input, output, session) {
     }
   })
   
+  #update grasp phenotypes based on the category selection
+  observeEvent(input$grasp.cat, {
+    if (!is.null(input$grasp.cat) && input$grasp.cat != '') {
+      phs <- get.grasp.phenotype(input$grasp.cat)
+      
+      #if (!is.null(input$grasp.pheno) && input$grasp.pheno != '')
+      #  ext <- as.list(input$grasp.pheno)
+      #else
+        ext <- list()
+      
+      updateSelectInput(session, 'grasp.pheno',
+                        choices = phs,
+                        selected = ext)
+    }
+  })
+  
   # main submit function ----------------------------------------------------
   
   observeEvent(input$submit.button, {
@@ -145,17 +182,17 @@ shinyServer(function(input, output, session) {
   
   check.input <- reactive({
     
-    if(input$snp.id.textarea == '' && is.null(re.file.data.frame())){
-      return(list(FALSE, 'Type SNPs ids or upload a valid file!'))
+    if (input$snp.id.textarea == '' && is.null(re.file.data.frame()) && is.null(input$grasp.pheno)) {
+      return(list(FALSE, 'Type SNPs ids, pick a GRASP phenotype or upload a valid file!'))
     }
     
-    if(input$snp.id.textarea != ''){
+    if (input$snp.id.textarea != '') {
       #check if snp ids are proper
       if (!all(substr(strsplit(input$snp.id.textarea, '\\s+|,')[[1]], 1,2) == 'rs'))
         return(list(FALSE, 'SNP ids are not valid!'))
     }
     
-    if (input$snp.id.textarea == '' && !re.is.selected.column.valid()) {
+    if (input$snp.id.textarea == '' && is.null(input$grasp.pheno) && !re.is.selected.column.valid()) {
       return(list(FALSE, 'Select a valid SNP column for the given file'))
     }
     
@@ -164,7 +201,8 @@ shinyServer(function(input, output, session) {
   
   re.get.all.inputs <- reactive({
     
-    return(list(snp.list = re.snp.list(),
+    return(list(snp.df = re.snp.df(),
+                grasp.pheno = input$grasp.pheno,
                 ld.cutoff = input$ld.slider,
                 ld.population = input$ld.population,
                 mir.target.db = input$mir.target.db
@@ -196,10 +234,10 @@ shinyServer(function(input, output, session) {
       f <- result.file.from.id(i)
       saveRDS(res, f)
     }, error = function(e){
-      t <- traceback()
+      #t <- traceback()
       #humanize output of traceback()
-      cat(paste0(paste0(rev(seq_along(t)), ': '), 
-                 lapply(t, paste0, collapse='\n'), collapse='\n\n'))
+      #cat(paste0(paste0(rev(seq_along(t)), ': '), 
+      #           lapply(t, paste0, collapse='\n'), collapse='\n\n'))
       saveRDS(e, file=error.file.from.id(i))
     })
     stop()
@@ -241,7 +279,7 @@ shinyServer(function(input, output, session) {
       } else {
         
         output$result.page <- renderUI({
-          h1('Result is still processing ... ')
+          h1('Result is still processing...')
         })
       }
     }
@@ -277,10 +315,15 @@ shinyServer(function(input, output, session) {
                           h4('Enter SNP ids (separated by space, newline or comma)'),
                           #tags$div(strong("SNP ids")),
                           tags$textarea(id="snp.id.textarea", rows=8, style="width:100%"),
-                          helpText('or select one of GRASP risk SNPs below'),
-                          selectInput('grasp.selection', "Risk SNPs",
-                                      "Grasp",
-                                      selectize = F)
+                          helpText('or select any GRASP phenotypes below'),
+                          selectInput('grasp.cat', "GRASP Phenotype Category",
+                                      get.grasp.cat(),
+                                      multiple = F,
+                                      selectize = T),
+                          selectInput('grasp.pheno', "GRASP Phenotype",
+                                      '',
+                                      multiple = T,
+                                      selectize = T)
                    ),
                    column(1, br(br(br(br(br(br(h4("or")))))))),
                    column(5,
