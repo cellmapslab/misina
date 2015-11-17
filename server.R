@@ -248,7 +248,7 @@ shinyServer(function(input, output, session) {
                    traceback=t,
                    inputs=inputs), file=error.file.from.id(i))
     })
-    quit(save='no')
+    stop()
   }
   
   #  Results section --------------------------------------------------------
@@ -377,11 +377,11 @@ shinyServer(function(input, output, session) {
                             column(6,
                                    h4('LD Proxy Search'),
                                    sliderInput('ld.slider', 'LD Cutoff', 0.1, 1, 0.8, 0.1),
-                                   selectInput('ld.population', 'Population', c('African',
-                                                                                'American',
-                                                                                'European',
-                                                                                'East Asia',
-                                                                                'South Asia'),
+                                   selectInput('ld.population', 'Population', list('African'    = 'afr',
+                                                                                   'American'   = 'amr',
+                                                                                   'European'   = 'eur',
+                                                                                   'East Asia'  = 'eas',
+                                                                                   'South Asia' = 'sas'),
                                                selected = 'European',
                                                selectize=F)
                             ),

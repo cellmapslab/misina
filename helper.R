@@ -11,6 +11,9 @@ dbsnp.file <- 'data/processed/dbsnp.leveldb'
 starbase.gr <- readRDS('data/processed/starbase.Rds')
 targetscan.gr <- readRDS('data/processed/targetscan.Rds')
 miranda.gr <- readRDS('data/processed/miranda.Rds')
+mir.target.avail <- list(Starbase = starbase.gr,
+                         miranda = miranda.gr,
+                         TargetScan = targetscan.gr)
 
 extract.snp.df <- function(inputs) {
   
@@ -56,12 +59,16 @@ run.pipeline <- function(inputs) {
   total.snps <- extract.snp.df(inputs)
   ld.cutoff <- as.numeric(inputs$ld.cutoff)
   ld.population <- inputs$ld.population
-  mir.target.db <- inputs$mir.target.db
+  mir.target.requested <- inputs$mir.target.db
   
-  mir.targets.gr <- merge.granges.aggressively(meta.columns=list(mir.target.db=c('Starbase', 'TargetScan', 'miranda')),
-                                               starbase.gr, targetscan.gr, miranda.gr)
+  mir.targets.gr <- merge.granges.aggressively(meta.columns=list(mir.target.db=mir.target.requested),
+                                               mir.target.avail[mir.target.requested])
   
-  SNP.df <- extend.with.LD(total.snps, rsquare = ld.cutoff, self.snp.label = 'risk.snp')
+  SNP.df <- extend.with.LD(total.snps, 
+                           rsquare = ld.cutoff, 
+                           self.snp.label = 'risk.snp',
+                           population = ld.population)
+  
   SNP.gr <- get.hg19.positions2(SNP.df, dbSNP.file = dbsnp.file)
   
   snp.mir.overlap.hits <- findOverlaps(SNP.gr, unique(mir.targets.gr))
