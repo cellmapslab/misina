@@ -65,11 +65,14 @@ shinyServer(function(input, output, session) {
   })
   
   re.selected.column <- reactive({
-    if (is.null(input$snp.table_columns_selected))
-      return(NULL)
+    #     if (is.null(input$snp.table_columns_selected))
+    #       return(NULL)
+    #     
+    #     cols <- as.integer(input$snp.table_columns_selected) + 1
     
-    cols <- as.integer(input$snp.table_columns_selected) + 1
-    cols
+    if (is.null(input$snp.col.select) || input$snp.col.select == '')
+      return(NULL)
+    which(colnames(re.file.data.frame()) == input$snp.col.select)
   })
   
   re.is.selected.column.valid <- reactive({
@@ -134,15 +137,18 @@ shinyServer(function(input, output, session) {
   observeEvent(re.file.data.frame(), {
     if(!is.null(re.file.data.frame())) {
       updateSelectInput(session, 'snp.col.select',
-                        choices = colnames(re.file.data.frame()))
+                        choices = colnames(re.file.data.frame()),
+                        selected = '')
     }
     
   })
   
-  observeEvent(re.selected.column(), {
-    if(!is.null(re.selected.column())) {
+  observeEvent(input$snp.table_columns_selected, {
+    if(!is.null(input$snp.table_columns_selected)) {
+      
+      cols <- as.integer(input$snp.table_columns_selected) + 1
       updateSelectInput(session, 'snp.col.select',
-                        selected = colnames(re.file.data.frame())[re.selected.column()])
+                        selected = colnames(re.file.data.frame())[cols])
     }
   })
   
@@ -227,6 +233,7 @@ shinyServer(function(input, output, session) {
     if (!dir.exists('jobs'))
       dir.create('jobs')
     
+    #something 
     withCallingHandlers({
       #child node executes the rest
       source('helper.R')
@@ -237,9 +244,11 @@ shinyServer(function(input, output, session) {
       t <- sys.calls()
       #humanize output of sys.calls()
       t <- paste0(paste0(rev(seq_along(t)), ': '), rev(t), collapse='\n\n')
-      saveRDS(list(error=e, traceback=t), file=error.file.from.id(i))
+      saveRDS(list(error=e, 
+                   traceback=t,
+                   inputs=inputs), file=error.file.from.id(i))
     })
-    stop()
+    quit(save='no')
   }
   
   #  Results section --------------------------------------------------------
@@ -249,8 +258,8 @@ shinyServer(function(input, output, session) {
       l <- paste0('?job=', i)
       span(id='processing_span',
            p('Your analysis is now scheduled. The results will be available ', 
-             a(id='resultlink', 'here', href=l), '.'),
-           img(src='spinner.gif', id='spinner')
+             a(id='resultlink', 'here', href=l), '.')
+           #img(src='spinner.gif', id='spinner')
       )
     })
   }
@@ -263,24 +272,34 @@ shinyServer(function(input, output, session) {
     if (file.exists(f)) {
       output$result.page <- renderUI({
         res <- readRDS(f)
-        div(h1('Result is ready!'),
-            DT::renderDataTable(res)
+        div(#h1('Result is ready!'),
+            DT::renderDataTable(res, style='bootstrap')
         )
       })
     } else { #result not found, show error
       
       if (file.exists(error.file.from.id(i))) {
-        err = readRDS(error.file.from.id(i))
-        output$result.page <- renderUI({
-          div(h1('An error occurred: '),
-              pre(as.character(err$error)),
-              pre(as.character(err$traceback))
-              )
-        })
+        err <- readRDS(error.file.from.id(i))
+        
+        query <- parseQueryString(session$clientData$url_search)
+        if (!is.null(query[['debug']])) {
+          output$result.page <- renderUI({
+            div(h1('An error occurred: '),
+                pre(as.character(err$error)),
+                pre(as.character(err$traceback))
+            )
+          })
+        } else {
+          output$result.page <- renderUI({
+            div(h1('An error occurred: '),
+                pre(as.character(err$error))
+            )
+          })
+        }
       } else {
         
         output$result.page <- renderUI({
-          h1('Result is still processing...')
+          h1('Your request is still being processed.')
         })
       }
     }

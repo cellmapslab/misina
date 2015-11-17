@@ -70,8 +70,10 @@ run.pipeline <- function(inputs) {
     stop('There is no overlap between risk snps and miR targets.')
   
   result.table <- generate.final.table(unique(mir.targets.gr),
-                                       CAD.SNP.gr,
-                                       snp.mir.overlap.matrix, annotate=T)
+                                       SNP.gr,
+                                       snp.mir.overlap.matrix, 
+                                       annotate=F,
+                                       aggregate=F)
   
   cat('Finished pipeline...')
   return(result.table)
