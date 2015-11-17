@@ -227,18 +227,17 @@ shinyServer(function(input, output, session) {
     if (!dir.exists('jobs'))
       dir.create('jobs')
     
-    tryCatch({
+    withCallingHandlers({
       #child node executes the rest
       source('helper.R')
       res <- run.pipeline(inputs)
       f <- result.file.from.id(i)
       saveRDS(res, f)
     }, error = function(e){
-      #t <- traceback()
-      #humanize output of traceback()
-      #cat(paste0(paste0(rev(seq_along(t)), ': '), 
-      #           lapply(t, paste0, collapse='\n'), collapse='\n\n'))
-      saveRDS(e, file=error.file.from.id(i))
+      t <- sys.calls()
+      #humanize output of sys.calls()
+      t <- paste0(paste0(rev(seq_along(t)), ': '), rev(t), collapse='\n\n')
+      saveRDS(list(error=e, traceback=t), file=error.file.from.id(i))
     })
     stop()
   }
@@ -274,7 +273,9 @@ shinyServer(function(input, output, session) {
         err = readRDS(error.file.from.id(i))
         output$result.page <- renderUI({
           div(h1('An error occurred: '),
-              pre(as.character(err)))
+              pre(as.character(err$error)),
+              pre(as.character(err$traceback))
+              )
         })
       } else {
         

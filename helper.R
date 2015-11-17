@@ -15,18 +15,33 @@ miranda.gr <- readRDS('data/processed/miranda.Rds')
 extract.snp.df <- function(inputs) {
   
   if (!is.null(inputs$grasp.pheno) && inputs$grasp.pheno != '') {
-    s <- GRASP2() %>% tbl(., 'study')
-    v <- GRASP2() %>% tbl(., 'variant')
+    g <- GRASP2()
+    dbDisconnect(g$con) #workaround for ugly rsqlite error
+    g$con <- dbConnect(g$con)
+    s <- g %>% tbl(., 'study')
+    v <- g %>% tbl(., 'variant')
     
     ph <- inputs$grasp.pheno
     Encoding(ph) <- 'utf-8' #revert back to original encoding
+    #required to use %in% statement in dplyr
+    ph <- as.list(ph)
     
     ph.pmid <- s %>% select(PMID, PaperPhenotypeDescription) %>%
       filter(PaperPhenotypeDescription %in% ph) %>% select(PMID) %>% 
       as.data.frame %>% `[[`(., 1)
     
+    #required to use %in% statement in dplyr
+    ph.pmid <- as.list(ph.pmid)
+    
     ret <- v %>% select(SNPidInPaper, Phenotype, chr_hg19, pos_hg19, dbSNPfxn, PMID, Pvalue) %>% 
-      filter(PMID %in% ph.pmid) %>% select(-PMID) %>%as.data.frame %>% rename(SNPs=SNPidInPaper) %>% as.data.frame
+      filter(PMID %in% ph.pmid) %>% select(-PMID) %>% as.data.frame 
+    colnames(ret)[colnames(ret) == 'SNPidInPaper'] <- 'SNPs'
+    
+    ret <- aggregate(ret,
+                     list(SNPs=ret$SNPs),
+                     function(x)paste0(unique(x), collapse=','))
+    ret <- ret[,-1]
+    
   } else {
     ret <- inputs$snp.df
   }
