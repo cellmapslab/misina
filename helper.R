@@ -30,15 +30,15 @@ extract.snp.df <- function(inputs) {
     #required to use %in% statement in dplyr
     ph <- as.list(ph)
     
-    ph.pmid <- s %>% select(PMID, PaperPhenotypeDescription) %>%
-      filter(PaperPhenotypeDescription %in% ph) %>% select(PMID) %>% 
+    ph.pmid <- s %>% dplyr::select(PMID, PaperPhenotypeDescription) %>%
+      filter(PaperPhenotypeDescription %in% ph) %>% dplyr::select(PMID) %>% 
       as.data.frame %>% `[[`(., 1)
     
     #required to use %in% statement in dplyr
     ph.pmid <- as.list(ph.pmid)
     
-    ret <- v %>% select(SNPidInPaper, Phenotype, chr_hg19, pos_hg19, dbSNPfxn, PMID, Pvalue) %>% 
-      filter(PMID %in% ph.pmid) %>% select(-PMID) %>% as.data.frame 
+    ret <- v %>% dplyr::select(SNPidInPaper, Phenotype, chr_hg19, pos_hg19, dbSNPfxn, PMID, Pvalue) %>% 
+      filter(PMID %in% ph.pmid) %>% dplyr::select(-PMID) %>% as.data.frame 
     colnames(ret)[colnames(ret) == 'SNPidInPaper'] <- 'SNPs'
     
     ret <- aggregate(ret,
