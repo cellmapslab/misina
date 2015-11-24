@@ -2,7 +2,9 @@
 library(shiny)
 
 shinyUI(
-  navbarPage("miR-SNP", id='navbar.panel',
+  #hide top navigation bar
+  span(tags$head(tags$style(HTML('.navbar-static-top { display: none; }'))),
+  navbarPage("Misina", id='navbar.panel',
              tabPanel("Input", htmlOutput('input.page')),
              
              tabPanel('Results', htmlOutput('result.page')
@@ -12,5 +14,5 @@ shinyUI(
              singleton(
                tags$head(tags$script(src = "message-handler.js"))
              )
-  )
+  ))
 )
