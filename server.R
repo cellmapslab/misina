@@ -60,7 +60,6 @@ shinyServer(function(input, output, session) {
     snp.file <- input$snp.file
     if(is.null(snp.file))
       return(NULL)
-    
     as.data.frame(fread(snp.file$datapath))
   })
   
@@ -310,7 +309,6 @@ shinyServer(function(input, output, session) {
     #isolate dediysek, hic calismaz demedik
     #results'a gectigin an calisir
     isolate({
-      print('isolated code')
       ld.df <- re.ld.data.frame()
       if(is.null(ld.df))
         return(NULL)
