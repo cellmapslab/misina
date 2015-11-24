@@ -1,9 +1,10 @@
-packages <- c('shiny', 'DT', 'data.table', 'uuid', 'inline', 'dplyr', 'devtools', 'rvest', 'httr', 'magrittr',
+packages <- c('shiny', 'data.table', 'uuid', 'inline', 'dplyr', 'devtools', 'rvest', 'httr', 'magrittr',
               'ggplot2', 'ggbio', 'RCurl', 'Cairo')
 install.packages(packages, repos='http://cran.uni-muenster.de')
 
 library(devtools)
 install_github('gokceneraslan/rcppleveldb')
+install_github('rstudio/DT')
 
 library(BiocInstaller)
 biocLite(c('org.Hseg.db', 'GenomicRanges', 'rtracklayer', 'gwascat', 'grasp2db'))
