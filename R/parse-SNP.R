@@ -19,8 +19,8 @@ snp.relative.pos <- function(snps, mir.bs) {
   abs(start(snps) - start(resize(mir.bs, 1, fix='end'))) + 1
 }
 
-merge.granges.aggressively <- function(meta.columns, ...) {
-  gr <- list(...)
+merge.granges.aggressively <- function(meta.columns, grs) {
+  gr <- as.list(grs)
   gr.lengths <- sapply(gr, length)
 
   #remove existing metadata columns temporarily and combine GRanges
@@ -425,5 +425,5 @@ generate.final.table <- function(targets.gr, CAD.snps.gr, snp.mir.overlap.matrix
     final.table <- final.table[,-(1:2)] #exclude group col.
   }
 
-  final.table
+  as.data.frame(final.table, stringsAsFactors=F)
 }

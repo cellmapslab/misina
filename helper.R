@@ -61,16 +61,23 @@ run.pipeline <- function(inputs) {
   ld.population <- inputs$ld.population
   mir.target.requested <- inputs$mir.target.db
   
+  cat('Merging mir target datasets...')
   mir.targets.gr <- merge.granges.aggressively(meta.columns=list(mir.target.db=mir.target.requested),
                                                mir.target.avail[mir.target.requested])
+  cat('Done')
   
+  cat('Performing LD imputation...')
   SNP.df <- extend.with.LD(total.snps, 
                            rsquare = ld.cutoff, 
                            self.snp.label = 'risk.snp',
                            population = ld.population)
+  cat('Done')
   
+  cat('Getting hg19 positions of all SNPs...')
   SNP.gr <- get.hg19.positions2(SNP.df, dbSNP.file = dbsnp.file)
+  cat('Done')
   
+  cat('Generating report now...')
   snp.mir.overlap.hits <- findOverlaps(SNP.gr, unique(mir.targets.gr))
   snp.mir.overlap.matrix <- as.matrix(snp.mir.overlap.hits)
   if (length(snp.mir.overlap.matrix) == 0)
@@ -81,7 +88,39 @@ run.pipeline <- function(inputs) {
                                        snp.mir.overlap.matrix, 
                                        annotate=F,
                                        aggregate=F)
+  cat('Done')
+  
+  # eQTL enrichment analysis ------------------------------------------------
+  
+  cat('Performing eQTL enrichment...')
+  gtex.eqtl <- readRDS('data/processed/GTEx.Rds')
+  gtex.eqtl <- gtex.eqtl[, c('SNP', 'T_Stat', 'P_Val', 'Gene_Name', 'eQTL.source', 'eQTL.tissue')]
+  names(gtex.eqtl) <- c('SNP', 'eQTL.tstat', 'eQTL.pvalue', 'eQTL.Gene', 'eQTL.Source', 'eQTL.Tissue')
+  gtex.eqtl[] <- lapply(gtex.eqtl, as.character)
+  
+  final.eqtl <- gtex.eqtl
+  final.eqtl$eQTL.IsProxyOf[is.na(final.eqtl$eQTL.IsProxyOf)] <- 'direct'
+  final.eqtl$eQTL.IsProxyOf[final.eqtl$eQTL.IsProxyOf == ''] <- 'direct'
+  
+  ultimate <- merge(result.table, final.eqtl, all.x=T, by='SNP')
+  #move eqtl columns towards the beginning
+  ultimate <- select(ultimate, SNP:mir.target.db, starts_with('eQTL'), everything())
+  ultimate <- aggregate(ultimate,
+                        list(SNP=ultimate$SNP, MIRR=ultimate$mir),
+                        function(x)paste(unique(x[x!='']), collapse=','))
+  ultimate <- ultimate[,-(1:2)]
+  
+  ultimate <- ultimate[order(ultimate$SNP),]
+  #add one more column denoting if the target gene == eGene
+  ultimate$eQTL.Gene.Same.as.Target.gene <- simplify2array(Map(function(gene, egene){
+    any(toupper(gene) == strsplit(toupper(egene), ',')[[1]])},
+    ultimate$gene, ultimate$eQTL.Gene))
+  
+  ultimate <- select(ultimate, SNP:mir.target.db, starts_with('eQTL'), everything())
+  cat('Done')
   
   cat('Finished pipeline...')
-  return(result.table)
+  return(ultimate)
 }
+
+

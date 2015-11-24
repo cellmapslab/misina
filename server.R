@@ -323,7 +323,7 @@ shinyServer(function(input, output, session) {
   output$input.page <- renderUI({
     fluidPage(
       # Application title
-      titlePanel("SNP@miR"),
+      titlePanel(a("SNP@miR", href='/')),
       br(),
       
       fluidRow(
@@ -382,7 +382,7 @@ shinyServer(function(input, output, session) {
                                                                                    'European'   = 'eur',
                                                                                    'East Asia'  = 'eas',
                                                                                    'South Asia' = 'sas'),
-                                               selected = 'European',
+                                               selected = 'eur',
                                                selectize=F)
                             ),
                             
