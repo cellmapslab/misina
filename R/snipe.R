@@ -30,7 +30,7 @@ snipa.get.rand <- function() {
   s <- html_session(snipa.rand.id.uri,
                     user_agent(user.agent))
   stop_for_status(s)
-  s %>% read.html() %>% html_node('p') %>% html_text()
+  s %>% read_html() %>% html_node('p') %>% html_text()
 }
 
 wait.processing.steps <- function(id, wait=0.5, tryout=10) {
