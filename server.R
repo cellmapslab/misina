@@ -321,7 +321,7 @@ shinyServer(function(input, output, session) {
   output$input.page <- renderUI({
     fluidPage(
       # Application title
-      titlePanel(a("SNP@miR", href='/')),
+      titlePanel(a("Misina", href='/')),
       br(),
       
       fluidRow(
