@@ -98,11 +98,7 @@ run.pipeline <- function(inputs) {
   names(gtex.eqtl) <- c('SNP', 'eQTL.tstat', 'eQTL.pvalue', 'eQTL.Gene', 'eQTL.Source', 'eQTL.Tissue')
   gtex.eqtl[] <- lapply(gtex.eqtl, as.character)
   
-  final.eqtl <- gtex.eqtl
-  final.eqtl$eQTL.IsProxyOf[is.na(final.eqtl$eQTL.IsProxyOf)] <- 'direct'
-  final.eqtl$eQTL.IsProxyOf[final.eqtl$eQTL.IsProxyOf == ''] <- 'direct'
-  
-  ultimate <- merge(result.table, final.eqtl, all.x=T, by='SNP')
+  ultimate <- merge(result.table, gtex.eqtl, all.x=T, by='SNP')
   #move eqtl columns towards the beginning
   ultimate <- select(ultimate, SNP:mir.target.db, starts_with('eQTL'), everything())
   ultimate <- aggregate(ultimate,
