@@ -6,7 +6,8 @@ suppressPackageStartupMessages(source('R/parse-SNP.R'))
 suppressPackageStartupMessages(source('R/snipe.R'))
 
 # input data files
-dbsnp.file <- 'data/processed/dbsnp.leveldb'
+#dbsnp.file <- 'data/processed/dbsnp.leveldb'
+dbsnp.file <- 'data/processed/dbSNP.GRCh37.p13.build142.sqlite'
 
 starbase.gr <- readRDS('data/processed/starbase.Rds')
 targetscan.gr <- readRDS('data/processed/targetscan.Rds')
@@ -74,7 +75,7 @@ run.pipeline <- function(inputs) {
   cat('Done')
   
   cat('Getting hg19 positions of all SNPs...')
-  SNP.gr <- get.hg19.positions2(SNP.df, dbSNP.file = dbsnp.file)
+  SNP.gr <- get.hg19.positions(SNP.df, dbSNP.file = dbsnp.file)
   cat('Done')
   
   cat('Generating report now...')
@@ -100,11 +101,11 @@ run.pipeline <- function(inputs) {
   
   ultimate <- merge(result.table, gtex.eqtl, all.x=T, by='SNP')
   #move eqtl columns towards the beginning
-  ultimate <- select(ultimate, SNP:mir.target.db, starts_with('eQTL'), everything())
-  ultimate <- aggregate(ultimate,
-                        list(SNP=ultimate$SNP, MIRR=ultimate$mir),
-                        function(x)paste(unique(x[x!='']), collapse=','))
-  ultimate <- ultimate[,-(1:2)]
+  ultimate <- dplyr::select(ultimate, SNP:mir.target.db, starts_with('eQTL'), everything())
+  #ultimate <- aggregate(ultimate,
+  #                      list(SNP=ultimate$SNP, MIRR=ultimate$mir),
+  #                      function(x)paste(unique(x[x!='']), collapse=','))
+  #ultimate <- ultimate[,-(1:2)]
   
   ultimate <- ultimate[order(ultimate$SNP),]
   #add one more column denoting if the target gene == eGene
@@ -112,7 +113,7 @@ run.pipeline <- function(inputs) {
     any(toupper(gene) == strsplit(toupper(egene), ',')[[1]])},
     ultimate$gene, ultimate$eQTL.Gene))
   
-  ultimate <- select(ultimate, SNP:mir.target.db, starts_with('eQTL'), everything())
+  ultimate <- dplyr::select(ultimate, SNP:mir.target.db, starts_with('eQTL'), everything())
   cat('Done')
   
   cat('Finished pipeline...')
