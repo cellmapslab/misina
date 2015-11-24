@@ -20,7 +20,7 @@ snp.relative.pos <- function(snps, mir.bs) {
 }
 
 merge.granges.aggressively <- function(meta.columns, grs) {
-  gr <- as.list(grs)
+  gr <- unname(grs)
   gr.lengths <- sapply(gr, length)
 
   #remove existing metadata columns temporarily and combine GRanges
