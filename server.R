@@ -319,47 +319,64 @@ shinyServer(function(input, output, session) {
   output$input.page <- renderUI({
     fluidPage(
       # Application title
-      titlePanel(a("Misina", href='/')),
+      titlePanel(div(a(span(tags$i(class='fa fa-dot-circle-o'), 
+                      "Misina"), 
+                       href='/', style="font-family: 'Lobster', cursive; color: black; text-decoration: none;")
+                       )),
       br(),
       
       fluidRow(
-        column(7,
+        column(6,
                wellPanel(
-                 h2('Input SNP List'),
+                 h3('Input SNP List'),
+                 fluidRow(class='vdivide',
+                          column(6,
+                                 div(
+                                   h4('A'),
+                                   helpText('Enter SNP ids (separated by space, newline or comma)'),
+                                   #tags$div(strong("SNP ids")),
+                                   tags$textarea(id="snp.id.textarea", rows=8, style="width:100%"),
+                                   div(actionButton('loadsnp.button', 'Load examples', class='btn'), 
+                                       style='text-align: right;'),
+                                   br(),
+                                   style='margin-right: 15px;')
+                          ),
+                          column(6,
+                                 div(
+                                   h4('B'),
+                                   helpText('or upload a SNP file in TSV/CSV format'),
+                                   fileInput('snp.file', '',#'SNP file in TSV/CSV format',
+                                             accept=c('text/csv', 'text/tsv',
+                                                      'text/comma-separated-values',
+                                                      'text/tab-separated-values',
+                                                      'text/plain', '.csv','.tsv', '.txt'),
+                                             width='100%'),
+                                   helpText('then select the column for SNPs below or simply click on a SNP'),
+                                   selectInput('snp.col.select', 'SNP column',
+                                               "",
+                                               selectize = F),
+                                   style='margin-left: 15px;')
+                          )
+                 ),
+                 hr(),
+                 h4('C'),
+                 helpText('or select below a disease to analyze the SNPs associated with it (via GRASP2)'),
                  fluidRow(
-                   column(6,
-                          h4('Enter SNP ids (separated by space, newline or comma)'),
-                          #tags$div(strong("SNP ids")),
-                          tags$textarea(id="snp.id.textarea", rows=8, style="width:100%"),
-                          helpText('or select any GRASP phenotypes below'),
-                          selectInput('grasp.cat', "GRASP Phenotype Category",
+                   column(5,
+                          selectInput('grasp.cat', "Disease/Phenotype Category",
                                       get.grasp.cat(),
                                       multiple = F,
-                                      selectize = T),
-                          selectInput('grasp.pheno', "GRASP Phenotype",
+                                      selectize = T)),
+                   column(2, 
+                          br(),
+                          div(
+                            span(class="glyphicon glyphicon-chevron-right", `aria-hidden`="true"),
+                            style='text-align:center;')),
+                   column(5,
+                          selectInput('grasp.pheno', "Phenotype",
                                       '',
                                       multiple = T,
                                       selectize = T)
-                   ),
-                   column(1, br(br(br(br(br(br(h4("or")))))))),
-                   column(5,
-                          h4('Upload a file'),
-                          fileInput('snp.file', 'Upload SNP list in TSV/CSV format',
-                                    accept=c('text/csv', 'text/tsv',
-                                             'text/comma-separated-values',
-                                             'text/tab-separated-values',
-                                             'text/plain', '.csv','.tsv', '.txt'),
-                                    width='100%'),
-                          #htmlOutput('text.below.file')
-                          helpText('then select the column for SNPs below or simply click on a SNP'),
-                          br(),
-                          br(),
-                          #br(),
-                          #br(),
-                          selectInput('snp.col.select', 'SNP column',
-                                      "",
-                                      selectize = F)
-                          
                    )
                  )
                ),
@@ -367,7 +384,7 @@ shinyServer(function(input, output, session) {
                fluidRow(
                  column(12,
                         wellPanel(
-                          h2('Configuration'),
+                          h3('Configuration'),
                           
                           fluidRow(
                             column(6,
@@ -399,8 +416,7 @@ shinyServer(function(input, output, session) {
                  )
                )
         ),
-        column(5,
-               
+        column(6,
                fluidRow(
                  column(12,
                         DT::dataTableOutput('snp.table')
