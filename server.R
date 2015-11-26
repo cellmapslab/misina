@@ -38,7 +38,7 @@ get.grasp.phenotype <- function(ct) {
   
   #"Beh\xe7et's disease" causes problems
   Encoding(ret) <- 'latin1'
-
+  
   as.list(ret)
 }
 
@@ -46,6 +46,8 @@ get.grasp.phenotype <- function(ct) {
 options(shiny.maxRequestSize=35*1024^2)
 
 shinyServer(function(input, output, session) {
+  
+  source('render-result.R')
   
   #redirect to result check page if ?job= is given
   observe({
@@ -159,7 +161,7 @@ shinyServer(function(input, output, session) {
       #if (!is.null(input$grasp.pheno) && input$grasp.pheno != '')
       #  ext <- as.list(input$grasp.pheno)
       #else
-        ext <- list()
+      ext <- list()
       
       updateSelectInput(session, 'grasp.pheno',
                         choices = phs,
@@ -269,12 +271,8 @@ shinyServer(function(input, output, session) {
     
     f <- result.file.from.id(i)
     if (file.exists(f)) {
-      output$result.page <- renderUI({
-        res <- readRDS(f)
-        div(#h1('Result is ready!'),
-            DT::renderDataTable(res, style='bootstrap')
-        )
-      })
+      res <- readRDS(f)
+      output$result.page <- render.result(res)
     } else { #result not found, show error
       
       if (file.exists(error.file.from.id(i))) {
@@ -412,5 +410,4 @@ shinyServer(function(input, output, session) {
         br()
       ))
   })
-  
 })
