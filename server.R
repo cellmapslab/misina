@@ -302,19 +302,24 @@ shinyServer(function(input, output, session) {
     }
   }
   
-  output$result.table <- DT::renderDataTable({
-    
-    #isolate dediysek, hic calismaz demedik
-    #results'a gectigin an calisir
-    isolate({
-      ld.df <- re.ld.data.frame()
-      if(is.null(ld.df))
-        return(NULL)
-      
-      DT::datatable(ld.df)
-    })
-    
-  })
+  #download result handler
+  output$download.results <- downloadHandler(
+    filename = function() { paste('results-', 
+                                  format(Sys.time(), "%Y-%m-%d-%H-%M-%S"), 
+                                  '.csv', sep='') },
+    content = function(file) {
+      query <- parseQueryString(session$clientData$url_search)
+      if (!is.null(query[['job']])) {
+        i <- query[['job']]
+        f <- result.file.from.id(i)
+        if (file.exists(f)) {
+          res <- readRDS(f)
+          write.csv(res, file, row.names = F)
+        }
+      }
+    }
+  )
+  
   
   output$input.page <- renderUI({
     fluidPage(

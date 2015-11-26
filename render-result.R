@@ -1,21 +1,27 @@
 render.result <- function(df) {
   
-  #return(renderUI({div(DT::renderDataTable(df, style='bootstrap', width='10%'))}))
-  
   snp.list <- (split(df, as.factor(df$SNP)))
   rendered.snp.list <- lapply(snp.list, render.SNP)
   
-#   renderUI({
-#     div(#h1('Result is ready!'),
-#       DT::renderDataTable(df, style='bootstrap', width='10%')
-#     )
-#   })
-  
   renderUI({
     fluidPage(
+      div(h2(a(span(tags$i(class='fa fa-dot-circle-o'), 
+                 "Misina"), 
+            href='/', style="font-family: 'Lobster', cursive; color: black; text-decoration: none;")
+      )),
       br(),
-      rendered.snp.list
-      )
+      tabsetPanel(
+        tabPanel('Results',
+                 br(),
+                 rendered.snp.list
+        ),
+        tabPanel('Table view',
+                 br(),
+                 DT::renderDataTable(df, style='bootstrap', width='100%')
+        ),
+        tabPanel('Download results', 
+                 br(),
+                 downloadLink('download.results', 'Click here to download the results.'))))
   })
 }
 
