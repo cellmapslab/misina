@@ -169,6 +169,12 @@ shinyServer(function(input, output, session) {
     }
   })
   
+  #load SNP examples button
+  observeEvent(input$loadsnp.button, {
+    snps <- 'rs10476052 rs1048920 rs1049633 rs113767110 rs11739062 rs11749762 rs1931895'
+    updateTextInput(session, 'snp.id.textarea', value = snps)
+  })
+  
   # main submit function ----------------------------------------------------
   
   observeEvent(input$submit.button, {
@@ -257,11 +263,12 @@ shinyServer(function(input, output, session) {
   result.scheduled.page <- function(i){
     output$result.page <- renderUI({
       l <- paste0('?job=', i)
-      span(id='processing_span',
-           p('Your analysis is now scheduled. The results will be available ', 
-             a(id='resultlink', 'here', href=l), '.')
-           #img(src='spinner.gif', id='spinner')
-      )
+      div(br(),
+          span(id='processing_span',
+               p('Your analysis is now scheduled. The results will be available ', 
+                 a(id='resultlink', 'here', href=l), '.')
+               #img(src='spinner.gif', id='spinner')
+          ))
     })
   }
   
