@@ -153,7 +153,6 @@ render.gwas <- function(snp) {
   df <- df[!apply(df, 1, function(x)all(is.na(x))),]
   
   if (nrow(df) > 0) {
-    print(df)
     span(
       br(),
       h4(strong('Disease associations:')),
