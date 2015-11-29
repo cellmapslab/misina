@@ -71,7 +71,8 @@ run.pipeline <- function(inputs) {
   SNP.df <- extend.with.LD(total.snps, 
                            rsquare = ld.cutoff, 
                            self.snp.label = 'risk.snp',
-                           population = ld.population)
+                           population = ld.population,
+                           aggregate.results=F)
   cat('Done')
   
   cat('Getting hg19 positions of all SNPs...')

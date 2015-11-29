@@ -340,11 +340,11 @@ shinyServer(function(input, output, session) {
       fluidRow(
         column(6,
                wellPanel(
-                 h3('Input SNP List'),
+                 h4('Input SNP List'),
                  fluidRow(class='vdivide',
                           column(6,
                                  div(
-                                   h4('A'),
+                                   h5('A'),
                                    helpText('Enter SNP ids (separated by space, newline or comma)'),
                                    #tags$div(strong("SNP ids")),
                                    tags$textarea(id="snp.id.textarea", rows=8, style="width:100%"),
@@ -355,7 +355,7 @@ shinyServer(function(input, output, session) {
                           ),
                           column(6,
                                  div(
-                                   h4('B'),
+                                   h5('B'),
                                    helpText('or upload a SNP file in TSV/CSV format'),
                                    fileInput('snp.file', '',#'SNP file in TSV/CSV format',
                                              accept=c('text/csv', 'text/tsv',
@@ -371,7 +371,7 @@ shinyServer(function(input, output, session) {
                           )
                  ),
                  hr(),
-                 h4('C'),
+                 h5('C'),
                  helpText('or select below a disease to analyze the SNPs associated with it (via GRASP2)'),
                  fluidRow(
                    column(5,
@@ -396,12 +396,11 @@ shinyServer(function(input, output, session) {
                fluidRow(
                  column(12,
                         wellPanel(
-                          h3('Configuration'),
+                          h4('Configuration'),
                           
                           fluidRow(
                             column(6,
-                                   h4('LD Proxy Search'),
-                                   sliderInput('ld.slider', 'LD Cutoff', 0.1, 1, 0.8, 0.1),
+                                   sliderInput('ld.slider', 'LD Proxy Cutoff', 0.1, 1, 0.8, 0.1),
                                    selectInput('ld.population', 'Population', list('African'    = 'afr',
                                                                                    'American'   = 'amr',
                                                                                    'European'   = 'eur',
@@ -413,8 +412,7 @@ shinyServer(function(input, output, session) {
                             
                             
                             column(4, offset = 1,
-                                   h4('micro-RNA Targets'),
-                                   checkboxGroupInput('mir.target.db', 'Select Target Databases',
+                                   checkboxGroupInput('mir.target.db', 'Select miRNA Target Databases',
                                                       c('TargetScan','miranda','Starbase'),
                                                       c('TargetScan','miranda','Starbase')
                                    )

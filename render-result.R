@@ -1,5 +1,10 @@
+
+options(shiny.table.class='data table table-hover')
+
 render.result <- function(df) {
   
+  df <- unique(df)
+  rownames(df) <- NULL
   snp.list <- (split(df, as.factor(df$SNP)))
   rendered.snp.list <- lapply(snp.list, render.SNP)
   
@@ -10,11 +15,23 @@ render.result <- function(df) {
             href='/', style="font-family: 'Lobster', cursive; color: black; text-decoration: none;")
       )),
       br(),
-      tabsetPanel(
-        tabPanel('Results',
-                 br(),
-                 rendered.snp.list
-        ),
+       tabsetPanel(
+         tabPanel('Results',
+                  br(),
+#                  navlistPanel(
+#                    "Header",
+#                    tabPanel("First",
+                             rendered.snp.list
+#                    ),
+#                    tabPanel("Second",
+#                             h3("This is the second panel")
+#                    ),
+#                    "-----",
+#                    tabPanel("Third",
+#                             h3("This is the third panel")
+#                    )
+#                  )
+         ),
         tabPanel('Table view',
                  br(),
                  DT::renderDataTable(df, style='bootstrap', width='100%')
@@ -28,32 +45,43 @@ render.result <- function(df) {
 render.SNP <- function(snp) {
   snp.id <- unique(snp$SNP) 
   snp.pos <- unique(snp$SNP.position)
-  ld.distance <- unique(snp$Distance)
-  ld.r2 <- unique(snp$R2)
-  orig.snp <- unique(snp$IsProxyOf)
+  snp.gene <- unique(snp$gene)
+  
+  ld.df <- snp[, c('Distance', 'IsProxyOf', 'R2')]
+  rendered.ld <- render.LD(ld.df)
   
   mirs <- split(snp, snp$mir)
   rendered.mirs <- lapply(mirs, render.miR)
+  #rendered.mirs <- render.miR2(snp)
+  rendered.eqtl <- render.eQTL(snp)
+  rendered.gwas <- render.gwas(snp)
   
   span(
-    fluidRow(column(3, wellPanel(div(h3(paste0('SNP: ', snp.id)), 
-                                     tags$table(
-                                       tags$tr(
-                                         tags$td('Position: '), tags$td(snp.pos)),
-                                       tags$tr(
-                                         tags$td('LD Information')
-                                       )
-#                                        tags$tr(
-#                                          tags$td('Distance: '), tags$td(ld.distance)),
-#                                        tags$tr(
-#                                          tags$td('R2: '), tags$td(ld.r2)),
-#                                        tags$tr(
-#                                          tags$td('Original risk SNP: '), tags$td(orig.snp))
-                                     )
+    fluidRow(column(3, wellPanel(div(h4(strong('SNP: '), snp.id),
+                                     h4(strong('Position: '), snp.pos), 
+                                     h4(strong('Gene: '), snp.gene), 
+                                     h4(strong('LD Information:')),
+                                     br(),
+                                     rendered.ld, 
+                                     rendered.gwas,
+                                     style='font-family: monospace;'
     ))),
-    column(9, span(rendered.mirs))),
+    column(9, span(rendered.mirs, rendered.eqtl))),
     hr()
-    )
+  )
+}
+
+render.LD <- function(ld) {
+  ld <- unique(ld)
+  rownames(ld) <- NULL
+  ld <- ld[,c('IsProxyOf', 'R2', 'Distance')]
+  ld <- ld[order(ld$R2, decreasing = T),]
+  colnames(ld)[1] <- 'Original Risk SNP'
+  
+  
+  span(
+    renderTable(ld, include.rownames=F),
+    style='display: inline-block;vertical-align: top;')
 }
 
 render.miR <- function(mir) {
@@ -68,22 +96,70 @@ render.miR <- function(mir) {
   mir.seed.category <- unique(mir$seed.category)
   mir.snp.pos <- unique(mir$SNP.position.in.miR)
   
-  span(h4(paste0('miRNA: ', mir.name)), 
+  span(h4(strong(paste0('miRNA: ', mir.name))), 
        tags$table(
          tags$tr(
-           tags$td('Target: '), tags$td(mir.target)),
+           tags$td('Target'), tags$td(mir.target)),
          tags$tr(
-           tags$td('Target position: '), tags$td(mir.target.pos)),
+           tags$td('Target position'), tags$td(mir.target.pos)),
          tags$tr(
-           tags$td('Target database: '), tags$td(mir.target.db)),
+           tags$td('Target database'), tags$td(mir.target.db)),
          tags$tr(
-           tags$td('miRNA accession: '), tags$td(mir.accession)),
+           tags$td('miRNA accession'), tags$td(mir.accession)),
          tags$tr(
-           tags$td('Target prediction score: '), tags$td(mir.pred.score)),
+           tags$td('Target prediction score'), tags$td(mir.pred.score)),
          tags$tr(
-           tags$td('miRNA seed category: '), tags$td(mir.seed.category)),
+           tags$td('miRNA seed category'), tags$td(mir.seed.category)),
          tags$tr(
-           tags$td('miRNA SNP position: '), tags$td(mir.snp.pos)),
-         class='table', style='display: inline-block;'),
+           tags$td('miRNA SNP position'), tags$td(mir.snp.pos)),
+         class='data table table-hover', style='display: inline-block;'),
        style='display: inline-block;')
+}
+
+render.miR2 <- function(mir) {
+  df <- mir[, c('mir', 'mir.target.pos', 'mirbase_acc', 'mir.target.db',
+                'miranda.conserved', 'score', 'seed.category', 'SNP.position.in.miR')]
+  df <- unique(df)
+  df <- as.data.frame(t(df))
+  
+  span(
+    h4(strong('miRNA')),
+    renderTable(df, include.colnames=F),
+    style='display: inline-block;vertical-align: top;')
+  
+}
+
+render.eQTL <- function(snp) {
+  df <- snp[, c('eQTL.Gene', 'eQTL.tstat', 'eQTL.pvalue', 'eQTL.Tissue')]
+  colnames(df) <- c('Regulated Gene', 't-statistic', 'p-value', 'Tissue')
+  df <- unique(df)
+  df <- df[!apply(df, 1, function(x)all(is.na(x))),]
+  
+  if (nrow(df) > 0) {
+    df <- as.data.frame(t(df))
+    span(
+      h4(strong('eQTL Support')),
+      renderTable(df, include.colnames=F),
+      style='display: inline-block;vertical-align: top;')
+  } else {
+    span() 
+  }
+}
+
+render.gwas <- function(snp) {
+  df <- snp[, c('DiseaseBySNP', 'DiseaseByGene')]
+  colnames(df) <- c('SNP-assoc.', 'Gene-assoc.')
+  df <- unique(df)
+  df <- df[!apply(df, 1, function(x)all(is.na(x))),]
+  
+  if (nrow(df) > 0) {
+    print(df)
+    span(
+      br(),
+      h4(strong('Disease associations:')),
+      renderTable(df, include.rownames=F))
+    #style='display: inline-block;vertical-align: top;')
+  } else {
+    span() 
+  }
 }
