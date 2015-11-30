@@ -37,7 +37,7 @@ extract.snp.df <- function(inputs) {
     #required to use %in% statement in dplyr
     ph.pmid <- as.list(ph.pmid)
     
-    ret <- v %>% dplyr::select(SNPidInPaper, Phenotype, chr_hg19, pos_hg19, dbSNPfxn, PMID, Pvalue) %>% 
+    ret <- v %>% dplyr::select(SNPidInPaper, Phenotype, dbSNPfxn, PMID, Pvalue) %>% 
       filter(PMID %in% ph.pmid) %>% dplyr::select(-PMID) %>% as.data.frame 
     colnames(ret)[colnames(ret) == 'SNPidInPaper'] <- 'SNPs'
     

@@ -74,7 +74,7 @@ render.SNP <- function(snp) {
   rendered.gwas <- render.gwas(snp)
   
   span(
-    fluidRow(column(2, wellPanel(div(h4(strong('SNP: '), snp.id),
+    fluidRow(column(3, wellPanel(div(h4(strong('SNP: '), snp.id),
                                      h4(strong('Score: '), score.tag), 
                                      h4(strong('Position: '), snp.pos), 
                                      h4(strong('Gene: '), snp.gene), 
@@ -84,7 +84,7 @@ render.SNP <- function(snp) {
                                      rendered.gwas,
                                      style='font-family: monospace;'
     ))),
-    column(10, span(rendered.mirs, rendered.eqtl))),
+    column(9, span(rendered.mirs, rendered.eqtl))),
     hr()
   )
 }
