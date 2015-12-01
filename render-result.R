@@ -6,12 +6,13 @@ render.result <- function(df) {
   
   df <- unique(df)
   rownames(df) <- NULL
+  additional.columns <- attr(df, 'additional.columns')
   
   #use score.snps function to sort the SNP list
   df$snp.priority <- score.snps(df)
   snp.list <- split(df, as.factor(df$SNP))
   snp.ord <- order(sapply(snp.list, function(x)max(x$snp.priority)), decreasing = T)
-  rendered.snp.list <- lapply(snp.list, render.SNP)
+  rendered.snp.list <- lapply(snp.list, render.SNP, additional.columns)
   rendered.snp.list <- rendered.snp.list[snp.ord]
   df$snp.priority <- NULL
   
@@ -49,10 +50,11 @@ render.result <- function(df) {
   })
 }
 
-render.SNP <- function(snp) {
+render.SNP <- function(snp, additional.columns) {
   snp.id <- unique(snp$SNP) 
   snp.pos <- unique(snp$SNP.position)
   snp.gene <- unique(snp$gene)
+  
   score <- max(snp$snp.priority)
   if (score == 0) {
     score.tag <- tags$i(class='fa fa-ban')
@@ -62,7 +64,8 @@ render.SNP <- function(snp) {
     score.tag <- span(replicate(score, tags$i(class='fa fa-thumbs-o-up'), simplify = F))
   }
   
-  ld.df <- snp[, c('Distance', 'IsProxyOf', 'R2')]
+  ld.df <- snp[, c('IsProxyOf', 'Distance', 'R2', additional.columns)]
+  colnames(ld.df)[1] <- 'Original Risk SNP'
   rendered.ld <- render.LD(ld.df)
   
   mirs <- split(snp, snp$mir)
@@ -79,6 +82,7 @@ render.SNP <- function(snp) {
                                      h4(strong('Position: '), snp.pos), 
                                      h4(strong('Gene: '), snp.gene), 
                                      h4(strong('LD Information:')),
+                                     #renderTable(as.data.frame(t(additional.col.df)), include.colnames=F),
                                      br(),
                                      rendered.ld, 
                                      rendered.gwas,
@@ -92,13 +96,10 @@ render.SNP <- function(snp) {
 render.LD <- function(ld) {
   ld <- unique(ld)
   rownames(ld) <- NULL
-  ld <- ld[,c('IsProxyOf', 'R2', 'Distance')]
   ld <- ld[order(ld$R2, decreasing = T),]
-  colnames(ld)[1] <- 'Original Risk SNP'
-  
   
   span(
-    renderTable(ld, include.rownames=F),
+    renderTable(as.data.frame(t(ld)), include.colnames=F),
     style='display: inline-block;vertical-align: top;')
 }
 

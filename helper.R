@@ -58,6 +58,9 @@ run.pipeline <- function(inputs) {
   
   cat('Starting pipeline...')
   total.snps <- extract.snp.df(inputs)
+  additional.columns <- colnames(total.snps)
+  additional.columns <- additional.columns[additional.columns != 'SNPs']
+  
   ld.cutoff <- as.numeric(inputs$ld.cutoff)
   ld.population <- inputs$ld.population
   mir.target.requested <- inputs$mir.target.db
@@ -103,10 +106,6 @@ run.pipeline <- function(inputs) {
   ultimate <- merge(result.table, gtex.eqtl, all.x=T, by='SNP')
   #move eqtl columns towards the beginning
   ultimate <- dplyr::select(ultimate, SNP:mir.target.db, starts_with('eQTL'), everything())
-  #ultimate <- aggregate(ultimate,
-  #                      list(SNP=ultimate$SNP, MIRR=ultimate$mir),
-  #                      function(x)paste(unique(x[x!='']), collapse=','))
-  #ultimate <- ultimate[,-(1:2)]
   
   ultimate <- ultimate[order(ultimate$SNP),]
   #add one more column denoting if the target gene == eGene
@@ -118,6 +117,10 @@ run.pipeline <- function(inputs) {
   cat('Done')
   
   cat('Finished pipeline...')
+  
+  #save names of additional columns
+  attr(ultimate, 'additional.columns') <- additional.columns
+  
   return(ultimate)
 }
 
