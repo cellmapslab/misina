@@ -1,8 +1,9 @@
 
 library(readr)
 library(dplyr)
+library(rtracklayer)
 
-mir.target.file <- 'data/processed/TargetScan_hg19Cons_ALL_CHRS.bed'
+mir.target.file <- 'data/base/Predicted_Targets.hg19.bed'
 mir.info.file <- 'data/base/Predicted_Targets_Info.txt'
 
 mir.targets.gr <- import(mir.target.file, genome = 'hg19')
@@ -27,7 +28,7 @@ x <- full_join(target.tbl, info,
               by=c('gene'='Gene Symbol', 'mir'='miR Family'))
 x <- group_by(x, gene, mir) %>% distinct()
 last <- left_join(target.tbl, x, by=c('score', 'gene', 'mir'))
-last <- rename(last, seed.category=seed.match)
+last <- dplyr::rename(last, seed.category=seed.match)
 
 mcols(mir.targets.gr) <- last
 saveRDS(mir.targets.gr, 'data/processed/targetscan.Rds')
