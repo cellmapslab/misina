@@ -72,7 +72,8 @@ render.SNP <- function(snp, additional.columns) {
   rendered.mirs <- lapply(mirs, render.miR)
   #rendered.mirs <- render.miR2(snp)
   
-  eqtls <- split(snp, snp$eQTL.Gene)
+  # TODO: her satir icin ayri eQTL'ler render et!
+  eqtls <- split(snp, snp$eQTL.Tissue)
   rendered.eqtl <- lapply(eqtls, render.eQTL)
   rendered.gwas <- render.gwas(snp)
   
@@ -104,16 +105,18 @@ render.LD <- function(ld) {
 }
 
 render.miR <- function(mir) {
-  
-  mir.name <- unique(mir$mir)
-  mir.target <- unique(mir$gene)
-  mir.target.pos <- unique(mir$mir.target.pos)
-  mir.accession <- unique(mir$mirbase_acc)
-  mir.target.db <- unique(mir$mir.target.db)
-  mir.miranda.conserved <- unique(mir$miranda.conserved)
-  mir.pred.score <- unique(mir$score)
-  mir.seed.category <- unique(mir$seed.category)
-  mir.snp.pos <- unique(mir$SNP.position.in.miR)
+  mir <- mir[, c('mir', 'mir.target.pos', 'mirbase_acc', 'mir.target.db', 'miranda.conserved', 'score', 'seed.category', 'SNP.position.in.miR')]
+  mir <- unique(mir)
+  mir.name <- mir$mir
+  mir.target <- mir$gene
+  mir.target.pos <- mir$mir.target.pos
+  mir.accession <- mir$mirbase_acc
+  mir.target.db <- mir$mir.target.db
+  mir.miranda.conserved <- mir$miranda.conserved
+  mir.pred.score <- mir$score
+  mir.seed.category <- mir$seed.category
+  mir.seed.category[is.na(mir$seed.category)] <- ''
+  mir.snp.pos <- mir$SNP.position.in.miR
   
   s <- tolower(substr(as.character(mir.seed.category), 1, 4))
   if (s == '7mer' | s == '8mer') {
@@ -163,11 +166,14 @@ render.miR2 <- function(mir) {
 
 render.eQTL <- function(snp) {
   
-  eqtl.gene <- unique(snp$eQTL.Gene)
-  eqtl.tstat <- unique(snp$eQTL.tstat)
-  eqtl.pvalue <- unique(snp$eQTL.pvalue)
-  eqtl.tissue <- unique(snp$eQTL.Tissue)
-  if (unique(snp$eQTL.Gene.Same.as.Target.gene) == T) {
+  snp <- snp[, c('eQTL.Gene', 'eQTL.tstat', 'eQTL.pvalue', 'eQTL.Tissue', 'eQTL.Gene.Same.as.Target.gene')]
+  snp <- unique(snp)
+  
+  eqtl.gene <- snp$eQTL.Gene
+  eqtl.tstat <- snp$eQTL.tstat
+  eqtl.pvalue <- snp$eQTL.pvalue
+  eqtl.tissue <- snp$eQTL.Tissue
+  if (snp$eQTL.Gene.Same.as.Target.gene == T) {
     eqtl.priority <- tags$i(class='fa fa-check-circle')
   } else {
     eqtl.priority <- NULL
@@ -228,7 +234,10 @@ score.snps <- function(df) {
   #seed category
   df$seed.category[is.na(df$seed.category)] <- ''
   s <- tolower(substr(as.character(df$seed.category), 1, 4))
-  score <- as.integer(s == '7mer' | s == '8mer')
+  if (all(is.na(s))) 
+    score <- 0
+  else
+    score <- as.integer(s == '7mer' | s == '8mer')
   
   #snp position
   score <- score + as.integer(df$SNP.position.in.miR < 13)
