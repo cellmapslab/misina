@@ -56,6 +56,7 @@ run.pipeline <- function(inputs) {
   
   cat('Starting pipeline...')
   total.snps <- extract.snp.df(inputs)
+  original.snp.count <- length(unique(total.snps$SNPs))
   additional.columns <- colnames(total.snps)
   additional.columns <- additional.columns[additional.columns != 'SNPs']
   
@@ -75,6 +76,7 @@ run.pipeline <- function(inputs) {
                            population = ld.population,
                            aggregate.results=F)
   cat('Done')
+  total.snp.count <- length(unique(SNP.df$SNP))
   
   cat('Getting hg19 positions of all SNPs...')
   SNP.gr <- get.hg19.positions(SNP.df, dbSNP.file = dbsnp.file)
@@ -98,7 +100,9 @@ run.pipeline <- function(inputs) {
   cat('Performing eQTL enrichment...')
   gtex <- src_sqlite(gtexdb.file)
   gtex.eqtl <- tbl(gtex, 'GTExv6')
-  gtex.eqtl <- dplyr::rename(gtex.eqtl, eQTL.beta=beta, eQTL.tstat=t_stat, eQTL.pvalue=p_value, eQTL.Gene=gene_name, eQTL.Souce=eQTL.source, eQTL.Tissue=eQTL.tissue)
+  gtex.eqtl <- dplyr::rename(gtex.eqtl, eQTL.beta=beta, eQTL.tstat=t_stat, 
+                             eQTL.pvalue=p_value, eQTL.Gene=gene_name, 
+                             eQTL.Souce=eQTL.source, eQTL.Tissue=eQTL.tissue)
 
   tmp.snps <- as.list(result.table$SNP)
   gtex.eqtl <- dplyr::collect(gtex.eqtl %>% filter(SNP %in% tmp.snps))
@@ -120,6 +124,8 @@ run.pipeline <- function(inputs) {
   
   #save names of additional columns
   attr(ultimate, 'additional.columns') <- additional.columns
+  attr(ultimate, 'original.snp.count') <- original.snp.count
+  attr(ultimate, 'total.snp.count') <- total.snp.count
   
   return(ultimate)
 }

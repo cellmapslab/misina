@@ -2,6 +2,8 @@
 shiny.table.class <- 'data table-condensed table-hover'
 options(shiny.table.class=shiny.table.class)
 
+library(ggplot2)
+
 render.result <- function(df) {
   
   df <- unique(df)
@@ -14,6 +16,7 @@ render.result <- function(df) {
   snp.ord <- order(sapply(snp.list, function(x)max(x$snp.priority)), decreasing = T)
   rendered.snp.list <- lapply(snp.list, render.SNP, additional.columns)
   rendered.snp.list <- rendered.snp.list[snp.ord]
+  rendered.stats <- render.stats(df)
   df$snp.priority <- NULL
   
   renderUI({
@@ -23,31 +26,61 @@ render.result <- function(df) {
             href='/', style="font-family: 'Lobster', cursive; color: black; text-decoration: none;")
       )),
       br(),
-       tabsetPanel(
-         tabPanel('Results',
-                  br(),
-#                  navlistPanel(
-#                    "Header",
-#                    tabPanel("First",
-                             rendered.snp.list
-#                    ),
-#                    tabPanel("Second",
-#                             h3("This is the second panel")
-#                    ),
-#                    "-----",
-#                    tabPanel("Third",
-#                             h3("This is the third panel")
-#                    )
-#                  )
-         ),
-        tabPanel('Table view',
-                 br(),
-                 DT::renderDataTable(df, style='bootstrap', width='100%', rownames=F)
-        ),
-        tabPanel('Download results', 
-                 br(),
-                 downloadLink('download.results', 'Click here to download the results.'))))
+      rendered.stats,
+      br(),
+      br(),
+      fluidRow(
+        tabsetPanel(
+          tabPanel('Results',
+                   br(),
+                   #                  navlistPanel(
+                   #                    "Header",
+                   #                    tabPanel("First",
+                   rendered.snp.list
+                   #                    ),
+                   #                    tabPanel("Second",
+                   #                             h3("This is the second panel")
+                   #                    ),
+                   #                    "-----",
+                   #                    tabPanel("Third",
+                   #                             h3("This is the third panel")
+                   #                    )
+                   #                  )
+          ),
+          tabPanel('Table view',
+                   br(),
+                   DT::renderDataTable(df, style='bootstrap', width='100%', rownames=F)
+          ),
+          tabPanel('Download results', 
+                   br(),
+                   downloadLink('download.results', 'Click here to download the results.')))
+        ))
+    
   })
+}
+
+render.stats <- function(df) { 
+ 
+  original.snp.count <- attr(df, 'original.snp.count')
+  total.snp.count    <- attr(df, 'total.snp.count')
+  hit.count <- length(unique(df$SNP))
+  
+  info.table <- tags$table(tags$tr(tags$td(strong('Number of risk SNPs')), tags$td(original.snp.count)),
+                           tags$tr(tags$td(strong('Number of total SNPs with LD proxies')), tags$td(total.snp.count)),
+                           tags$tr(tags$td(strong('Number of hits'), tags$td(hit.count))),
+                           class='data table-condensed')
+  
+  tmp <- unique(df[, c('SNP', 'snp.priority')])
+  plot <- renderPlot({
+    qplot(tmp$snp.priority, xlab='SNP Scores') +
+      theme_minimal()
+    }, res=100, height = 200)
+  
+ fluidRow(
+   column(3, plot),
+   column(9, info.table)
+ )
+  
 }
 
 render.SNP <- function(snp, additional.columns) {

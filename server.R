@@ -303,7 +303,7 @@ shinyServer(function(input, output, session) {
       } else {
         
         output$result.page <- renderUI({
-          h1('Your request is still being processed.')
+          p('Your request is still being processed.')
         })
       }
     }
