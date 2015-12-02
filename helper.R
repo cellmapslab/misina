@@ -14,13 +14,6 @@ dbsnp.file <- 'data/processed/dbSNP.GRCh37.p13.build142.sqlite'
 gtexdb.file <- 'data/processed/GTExv6.sqlite'
 #gtexdb.file <- '/storage/cmbstore/projects/misina/GTExv6.sqlite'
 
-starbase.gr <- readRDS('data/processed/starbase.Rds')
-targetscan.gr <- readRDS('data/processed/targetscan.Rds')
-miranda.gr <- readRDS('data/processed/miranda.Rds')
-mir.target.avail <- list(Starbase = starbase.gr,
-                         miranda = miranda.gr,
-                         TargetScan = targetscan.gr)
-
 extract.snp.df <- function(inputs) {
   
   if (!is.null(inputs$grasp.pheno) && inputs$grasp.pheno != '') {
@@ -96,8 +89,8 @@ run.pipeline <- function(inputs) {
   result.table <- generate.final.table(unique(mir.targets.gr),
                                        SNP.gr,
                                        snp.mir.overlap.matrix, 
-                                       annotate=F,
-                                       aggregate=F)
+                                       annotate = F,
+                                       aggregate.results = F)
   cat('Done')
   
   # eQTL enrichment analysis ------------------------------------------------
