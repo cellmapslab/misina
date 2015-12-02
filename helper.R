@@ -105,9 +105,12 @@ run.pipeline <- function(inputs) {
   cat('Performing eQTL enrichment...')
   gtex <- src_sqlite(gtexdb.file)
   gtex.eqtl <- tbl(gtex, 'GTExv6')
-  gtex.eqtl <- rename(gtex.eqtl, eQTL.beta=beta, eQTL.tstat=t_stat, eQTL.pvalue=p_value, eQTL.Gene=gene_name, eQTL.Souce=eQTL.source, eQTL.Tissue=eQTL.tissue)
+  gtex.eqtl <- dplyr::rename(gtex.eqtl, eQTL.beta=beta, eQTL.tstat=t_stat, eQTL.pvalue=p_value, eQTL.Gene=gene_name, eQTL.Souce=eQTL.source, eQTL.Tissue=eQTL.tissue)
+
+  tmp.snps <- as.list(result.table$SNP)
+  gtex.eqtl <- dplyr::collect(gtex.eqtl %>% filter(SNP %in% tmp.snps))
   
-  ultimate <- left_join(result.table, gtex.eqtl, by='SNP', copy=T)
+  ultimate <- dplyr::left_join(result.table, gtex.eqtl, by='SNP', copy=T)
   #move eqtl columns towards the beginning
   ultimate <- dplyr::select(ultimate, SNP:mir.target.db, starts_with('eQTL'), everything())
   
