@@ -164,7 +164,7 @@ render.miR2 <- function(mir) {
 
 render.eQTL <- function(snp) {
   
-  snp <- snp[, c('eQTL.Gene', 'eQTL.tstat', 'eQTL.pvalue', 'eQTL.Tissue', 'eQTL.Gene.Same.as.Target.gene')]
+  snp <- snp[, c('eQTL.Gene', 'eQTL.beta', 'eQTL.tstat', 'eQTL.pvalue', 'eQTL.Tissue', 'eQTL.Gene.Same.as.Target.gene')]
   snp <- unique(snp)
   no.na <- which(apply(snp, 1, function(x)!all(is.na(x))))
   
@@ -173,6 +173,7 @@ render.eQTL <- function(snp) {
     s <- snp[row, ,drop=F]
     eqtl.gene <- s$eQTL.Gene
     eqtl.tstat <- s$eQTL.tstat
+    eqtl.effect <- s$eQTL.beta
     eqtl.pvalue <- s$eQTL.pvalue
     eqtl.tissue <- s$eQTL.Tissue
     eqtl.sameas <- s$eQTL.Gene.Same.as.Target.gene 
@@ -187,6 +188,8 @@ render.eQTL <- function(snp) {
          tags$table(
            tags$tr(
              tags$td('Gene'), tags$td(span(eqtl.gene, eqtl.priority))),
+           tags$tr(
+             tags$td('effect size'), tags$td(eqtl.effect)),
            tags$tr(
              tags$td('t-statistic'), tags$td(eqtl.tstat)),
            tags$tr(
