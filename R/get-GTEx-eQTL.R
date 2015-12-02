@@ -1,5 +1,6 @@
 
 library(readr)
+library(dplyr)
 
 gtex.files <- list.files('data/base/GTEx', full.names = T)
 gtex.tissues <- sapply(strsplit(basename(gtex.files), '_', fixed=T), function(x){paste(x[-length(x)], collapse = ' ')})
