@@ -97,13 +97,17 @@ render.LD <- function(ld) {
   rownames(ld) <- NULL
   ld <- ld[order(ld$R2, decreasing = T),]
   
-  span(
-    renderTable(as.data.frame(t(ld)), include.colnames=F),
-    style='display: inline-block;vertical-align: top;')
+  res <- lapply(seq_len(nrow(ld)), function(r){
+    span(
+      renderTable(as.data.frame(t(ld[r,,drop=F])), include.colnames=F),
+      hr(),
+      style='display: inline-block;vertical-align: top;')  
+    })
+  return(span(res))
 }
 
 render.miR <- function(mir) {
-  mir <- mir[, c('mir', 'mir.target.pos', 'mirbase_acc', 'mir.target.db', 'miranda.conserved', 'score', 'seed.category', 'SNP.position.in.miR')]
+  mir <- mir[, c('mir', 'gene', 'mir.target.pos', 'mirbase_acc', 'mir.target.db', 'miranda.conserved', 'score', 'seed.category', 'SNP.position.in.miR')]
   mir <- unique(mir)
   mir.name <- mir$mir
   mir.target <- mir$gene
@@ -128,17 +132,22 @@ render.miR <- function(mir) {
   else
     snp.pos.priority <- NULL
   
+  if (!is.na(mir.accession) && mir.accession != '')
+    tit <- a(strong(paste0('miRNA: ', mir.name)), 
+             href = paste0('http://www.mirbase.org/cgi-bin/mature.pl?mature_acc=', mir.accession))
+  else 
+    tit <- strong(paste0('miRNA: ', mir.name))
   
-  span(h4(strong(paste0('miRNA: ', mir.name))), 
+  span(h4(tit), 
        tags$table(
-         tags$tr(
-           tags$td('Target'), tags$td(mir.target)),
+         #tags$tr(
+         #  tags$td('Target'), tags$td(mir.target)),
          tags$tr(
            tags$td('Target position'), tags$td(mir.target.pos)),
          tags$tr(
            tags$td('Target database'), tags$td(mir.target.db)),
-         tags$tr(
-           tags$td('miRNA accession'), tags$td(mir.accession)),
+         #tags$tr(
+         # tags$td('miRNA accession'), tags$td(mir.accession)),
          tags$tr(
            tags$td('Target prediction score'), tags$td(mir.pred.score)),
          tags$tr(
