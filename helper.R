@@ -8,6 +8,11 @@ suppressPackageStartupMessages(source('R/snipe.R'))
 # input data files
 #dbsnp.file <- 'data/processed/dbsnp.leveldb'
 dbsnp.file <- 'data/processed/dbSNP.GRCh37.p13.build142.sqlite'
+#dbsnp.file <- '/storage/cmbstore/projects/misina/dbSNP.GRCh37.p13.build142.sqlite'
+
+#GTEx db
+dbsnp.file <- 'data/processed/GTExv6.sqlite'
+#dbsnp.file <- '/storage/cmbstore/projects/misina/GTExv6.sqlite'
 
 starbase.gr <- readRDS('data/processed/starbase.Rds')
 targetscan.gr <- readRDS('data/processed/targetscan.Rds')
@@ -98,9 +103,8 @@ run.pipeline <- function(inputs) {
   # eQTL enrichment analysis ------------------------------------------------
   
   cat('Performing eQTL enrichment...')
-  gtex.eqtl <- readRDS('data/processed/GTEx.Rds')
-  gtex.eqtl <- gtex.eqtl[, c('SNP', 'T_Stat', 'P_Val', 'Gene_Name', 'eQTL.source', 'eQTL.tissue')]
-  names(gtex.eqtl) <- c('SNP', 'eQTL.tstat', 'eQTL.pvalue', 'eQTL.Gene', 'eQTL.Source', 'eQTL.Tissue')
+  gtex.eqtl <- readRDS('data/processed/GTExv6.Rds')
+  names(gtex.eqtl) <- c('SNP', 'eQTL.beta', 'eQTL.tstat', 'eQTL.pvalue', 'eQTL.Gene', 'eQTL.Source', 'eQTL.Tissue')
   gtex.eqtl[] <- lapply(gtex.eqtl, as.character)
   
   ultimate <- merge(result.table, gtex.eqtl, all.x=T, by='SNP')
