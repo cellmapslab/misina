@@ -72,9 +72,7 @@ render.SNP <- function(snp, additional.columns) {
   rendered.mirs <- lapply(mirs, render.miR)
   #rendered.mirs <- render.miR2(snp)
   
-  # TODO: her satir icin ayri eQTL'ler render et!
-  eqtls <- split(snp, snp$eQTL.Tissue)
-  rendered.eqtl <- lapply(eqtls, render.eQTL)
+  rendered.eqtl <- render.eQTL(snp)
   rendered.gwas <- render.gwas(snp)
   
   span(
@@ -168,30 +166,37 @@ render.eQTL <- function(snp) {
   
   snp <- snp[, c('eQTL.Gene', 'eQTL.tstat', 'eQTL.pvalue', 'eQTL.Tissue', 'eQTL.Gene.Same.as.Target.gene')]
   snp <- unique(snp)
+  no.na <- which(apply(snp, 1, function(x)!all(is.na(x))))
   
-  eqtl.gene <- snp$eQTL.Gene
-  eqtl.tstat <- snp$eQTL.tstat
-  eqtl.pvalue <- snp$eQTL.pvalue
-  eqtl.tissue <- snp$eQTL.Tissue
-  if (snp$eQTL.Gene.Same.as.Target.gene == T) {
-    eqtl.priority <- tags$i(class='fa fa-check-circle')
-  } else {
-    eqtl.priority <- NULL
-  }
-  
-  span(h4(strong(paste0('eQTL Support'))), 
-       tags$table(
-         tags$tr(
-           tags$td('Gene'), tags$td(span(eqtl.gene, eqtl.priority))),
-         tags$tr(
-           tags$td('t-statistic'), tags$td(eqtl.tstat)),
-         tags$tr(
-           tags$td('p-value'), tags$td(eqtl.pvalue)),
-         tags$tr(
-           tags$td('Tissue'), tags$td(eqtl.tissue)),
-         class=shiny.table.class, style='display: inline-block;'),
-       style='display: inline-block;vertical-align: top;')
-  
+  res <- lapply(no.na, function(row){
+    
+    s <- snp[row, ,drop=F]
+    eqtl.gene <- s$eQTL.Gene
+    eqtl.tstat <- s$eQTL.tstat
+    eqtl.pvalue <- s$eQTL.pvalue
+    eqtl.tissue <- s$eQTL.Tissue
+    eqtl.sameas <- s$eQTL.Gene.Same.as.Target.gene 
+    
+    if (eqtl.sameas == T) {
+      eqtl.priority <- tags$i(class='fa fa-check-circle')
+    } else {
+      eqtl.priority <- NULL
+    }
+    
+    span(h4(strong(paste0('eQTL Support'))), 
+         tags$table(
+           tags$tr(
+             tags$td('Gene'), tags$td(span(eqtl.gene, eqtl.priority))),
+           tags$tr(
+             tags$td('t-statistic'), tags$td(eqtl.tstat)),
+           tags$tr(
+             tags$td('p-value'), tags$td(eqtl.pvalue)),
+           tags$tr(
+             tags$td('Tissue'), tags$td(eqtl.tissue)),
+           class=shiny.table.class, style='display: inline-block;'),
+         style='display: inline-block;vertical-align: top;')
+  })
+  return(span(res))
 }
 
 render.eQTL2 <- function(snp) {
