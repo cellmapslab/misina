@@ -72,9 +72,11 @@ render.stats <- function(df) {
   
   tmp <- unique(df[, c('SNP', 'snp.priority')])
   plot <- renderPlot({
-    qplot(tmp$snp.priority, xlab='SNP Scores') +
+    qplot(tmp$snp.priority, xlab='SNP Scores (0-3)') +
+      scale_x_discrete(limits=0:3) +
+      scale_y_discrete() +
       theme_minimal()
-    }, res=100, height = 200)
+    }, height = 200)
   
  fluidRow(
    column(3, plot),
