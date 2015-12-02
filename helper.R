@@ -70,9 +70,9 @@ run.pipeline <- function(inputs) {
   ld.population <- inputs$ld.population
   mir.target.requested <- inputs$mir.target.db
   
-  cat('Merging mir target datasets...')
-  mir.targets.gr <- merge.granges.aggressively(meta.columns=list(mir.target.db=mir.target.requested),
-                                               mir.target.avail[mir.target.requested])
+  cat('Loading mir target datasets...')
+  mir.targets.gr <- readRDS('data/processed/mir-all-targets.Rds')
+  mir.targets.gr <- mir.targets.gr[mir.targets.gr$mir.target.db %in% mir.target.requested]
   cat('Done')
   
   cat('Performing LD imputation...')
