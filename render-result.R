@@ -164,7 +164,7 @@ render.miR2 <- function(mir) {
 
 render.eQTL <- function(snp) {
   
-  snp <- snp[, c('eQTL.Gene', 'eQTL.tstat', 'eQTL.pvalue', 'eQTL.Tissue', 'eQTL.Gene.Same.as.Target.gene')]
+  snp <- snp[, c('eQTL.Gene', 'eQTL.beta', 'eQTL.tstat', 'eQTL.pvalue', 'eQTL.Tissue', 'eQTL.Gene.Same.as.Target.gene')]
   snp <- unique(snp)
   no.na <- which(apply(snp, 1, function(x)!all(is.na(x))))
   
