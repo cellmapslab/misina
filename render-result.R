@@ -68,7 +68,7 @@ render.stats <- function(df) {
   info.table <- tags$table(tags$tr(tags$td(strong('Number of risk SNPs')), tags$td(original.snp.count)),
                            tags$tr(tags$td(strong('Number of total SNPs with LD proxies')), tags$td(total.snp.count)),
                            tags$tr(tags$td(strong('Number of hits'), tags$td(hit.count))),
-                           class='data table-condensed')
+                           class='data table-condensed table')
   
   tmp <- unique(df[, c('SNP', 'snp.priority')])
   plot <- renderPlot({
