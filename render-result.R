@@ -131,6 +131,7 @@ render.LD <- function(ld) {
   ld <- unique(ld)
   rownames(ld) <- NULL
   ld <- ld[order(ld$R2, decreasing = T),]
+  ld$R2 <- round(ld$R2, 2)
   
   res <- lapply(seq_len(nrow(ld)), function(r){
     span(
@@ -211,14 +212,15 @@ render.eQTL <- function(snp) {
   snp <- snp[, c('eQTL.Gene', 'eQTL.beta', 'eQTL.tstat', 'eQTL.pvalue', 'eQTL.Tissue', 'eQTL.Gene.Same.as.Target.gene')]
   snp <- unique(snp)
   no.na <- which(apply(snp, 1, function(x)!all(is.na(x))))
+  i <- 1
   
   res <- lapply(no.na, function(row){
     
     s <- snp[row, ,drop=F]
     eqtl.gene <- s$eQTL.Gene
-    eqtl.tstat <- s$eQTL.tstat
-    eqtl.effect <- s$eQTL.beta
-    eqtl.pvalue <- s$eQTL.pvalue
+    eqtl.tstat <- round(s$eQTL.tstat, 2)
+    eqtl.effect <- round(s$eQTL.beta, 2)
+    eqtl.pvalue <- format.pval(s$eQTL.pvalue, 2)
     eqtl.tissue <- s$eQTL.Tissue
     eqtl.sameas <- s$eQTL.Gene.Same.as.Target.gene 
     
@@ -228,18 +230,36 @@ render.eQTL <- function(snp) {
       eqtl.priority <- NULL
     }
     
-    span(h4(strong(paste0('eQTL Support'))), 
+    if(i == 1) {
+      header <- h4(strong(paste0('eQTL Support')))
+      gene.header <- tags$td('Gene')
+      effect.header <- tags$td('Effect size')
+      tstat.header <- tags$td('t-statistic')
+      pvalue.header <- tags$td('p-value')
+      tissue.header <- tags$td('Tissue')
+    }
+    else {
+      header <- h4(strong(HTML('&nbsp;')))
+      gene.header <- NULL
+      effect.header <- NULL
+      tstat.header <- NULL
+      pvalue.header <- NULL
+      tissue.header <- NULL
+    }
+    
+    i <<- i + 1
+    span(header, 
          tags$table(
            tags$tr(
-             tags$td('Gene'), tags$td(span(eqtl.gene, eqtl.priority))),
+             gene.header, tags$td(span(eqtl.gene, eqtl.priority))),
            tags$tr(
-             tags$td('effect size'), tags$td(eqtl.effect)),
+             effect.header, tags$td(eqtl.effect)),
            tags$tr(
-             tags$td('t-statistic'), tags$td(eqtl.tstat)),
+             tstat.header, tags$td(eqtl.tstat)),
            tags$tr(
-             tags$td('p-value'), tags$td(eqtl.pvalue)),
+             pvalue.header, tags$td(eqtl.pvalue)),
            tags$tr(
-             tags$td('Tissue'), tags$td(eqtl.tissue)),
+             tissue.header, tags$td(eqtl.tissue)),
            class=shiny.table.class, style='display: inline-block;'),
          style='display: inline-block;vertical-align: top;')
   })
