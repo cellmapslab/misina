@@ -179,17 +179,17 @@ render.miR <- function(mir) {
          #tags$tr(
          #  tags$td('Target'), tags$td(mir.target)),
          tags$tr(
-           tags$td('Target position'), tags$td(mir.target.pos)),
+           tags$td(strong('Target position')), tags$td(mir.target.pos)),
          tags$tr(
-           tags$td('Target database'), tags$td(mir.target.db)),
+           tags$td(strong('Target database')), tags$td(mir.target.db)),
          #tags$tr(
          # tags$td('miRNA accession'), tags$td(mir.accession)),
          tags$tr(
-           tags$td('Target prediction score'), tags$td(mir.pred.score)),
+           tags$td(strong('Target prediction score')), tags$td(mir.pred.score)),
          tags$tr(
-           tags$td('miRNA seed category'), tags$td(span(mir.seed.category, '  ', seed.priority))),
+           tags$td(strong('Seed category')), tags$td(span(mir.seed.category, '  ', seed.priority))),
          tags$tr(
-           tags$td('miRNA SNP position'), tags$td(span(mir.snp.pos, snp.pos.priority))),
+           tags$td(strong('miRNA SNP position')), tags$td(span(mir.snp.pos, snp.pos.priority))),
          class=shiny.table.class, style='display: inline-block;'),
        style='display: inline-block;')
 }
@@ -218,9 +218,10 @@ render.eQTL <- function(snp) {
     
     s <- snp[row, ,drop=F]
     eqtl.gene <- s$eQTL.Gene
-    eqtl.tstat <- round(s$eQTL.tstat, 2)
-    eqtl.effect <- round(s$eQTL.beta, 2)
+    eqtl.tstat <- s$eQTL.tstat
+    eqtl.effect <- s$eQTL.beta
     eqtl.pvalue <- format.pval(s$eQTL.pvalue, 2)
+    eqtl.effect.p.t <- sprintf('%.2f(%.2f|%s)', eqtl.effect, eqtl.tstat, eqtl.pvalue)
     eqtl.tissue <- s$eQTL.Tissue
     eqtl.sameas <- s$eQTL.Gene.Same.as.Target.gene 
     
@@ -232,18 +233,18 @@ render.eQTL <- function(snp) {
     
     if(i == 1) {
       header <- h4(strong(paste0('eQTL Support')))
-      gene.header <- tags$td('Gene')
-      effect.header <- tags$td('Effect size')
-      tstat.header <- tags$td('t-statistic')
-      pvalue.header <- tags$td('p-value')
-      tissue.header <- tags$td('Tissue')
+      gene.header <- tags$td(strong('Gene'))
+      effect.header <- tags$td(strong('Effect size (t-stat | p-val)'))
+      #tstat.header <- tags$td('t-statistic')
+      #pvalue.header <- tags$td('p-value')
+      tissue.header <- tags$td(strong('Tissue'))
     }
     else {
       header <- h4(strong(HTML('&nbsp;')))
       gene.header <- NULL
       effect.header <- NULL
-      tstat.header <- NULL
-      pvalue.header <- NULL
+      #tstat.header <- NULL
+      #pvalue.header <- NULL
       tissue.header <- NULL
     }
     
@@ -253,13 +254,13 @@ render.eQTL <- function(snp) {
            tags$tr(
              gene.header, tags$td(span(eqtl.gene, eqtl.priority))),
            tags$tr(
-             effect.header, tags$td(eqtl.effect)),
-           tags$tr(
-             tstat.header, tags$td(eqtl.tstat)),
-           tags$tr(
-             pvalue.header, tags$td(eqtl.pvalue)),
-           tags$tr(
              tissue.header, tags$td(eqtl.tissue)),
+           tags$tr(
+             effect.header, tags$td(eqtl.effect.p.t)),
+           #tags$tr(
+           # tstat.header, tags$td(eqtl.tstat)),
+           #tags$tr(
+           # pvalue.header, tags$td(eqtl.pvalue)),
            class=shiny.table.class, style='display: inline-block;'),
          style='display: inline-block;vertical-align: top;')
   })
