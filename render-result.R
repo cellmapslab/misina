@@ -218,10 +218,10 @@ render.eQTL <- function(snp) {
     
     s <- snp[row, ,drop=F]
     eqtl.gene <- s$eQTL.Gene
-    eqtl.tstat <- s$eQTL.tstat
+    #eqtl.tstat <- s$eQTL.tstat
     eqtl.effect <- s$eQTL.beta
     eqtl.pvalue <- format.pval(s$eQTL.pvalue, 2)
-    eqtl.effect.p.t <- sprintf('%.2f(%.2f|%s)', eqtl.effect, eqtl.tstat, eqtl.pvalue)
+    eqtl.effect.p.t <- sprintf('%.2f (%s)', eqtl.effect, eqtl.pvalue)
     eqtl.tissue <- s$eQTL.Tissue
     eqtl.sameas <- s$eQTL.Gene.Same.as.Target.gene 
     
@@ -234,7 +234,7 @@ render.eQTL <- function(snp) {
     if(i == 1) {
       header <- h4(strong(paste0('eQTL Support')))
       gene.header <- tags$td(strong('Gene'))
-      effect.header <- tags$td(strong('Effect size (t-stat | p-val)'))
+      effect.header <- tags$td(strong('Effect size (p-value)'))
       #tstat.header <- tags$td('t-statistic')
       #pvalue.header <- tags$td('p-value')
       tissue.header <- tags$td(strong('Tissue'))
