@@ -209,6 +209,9 @@ shinyServer(function(input, output, session) {
       return(list(FALSE, 'Select a valid SNP column for the given file'))
     }
     
+    if(is.null(input$mir.target.db) || length(input$mir.target.db) < 0)
+      return(list(FALSE, 'Select at least one target database.'))
+    
     return(list(TRUE, ''))
   })
   
@@ -303,7 +306,8 @@ shinyServer(function(input, output, session) {
       } else {
         
         output$result.page <- renderUI({
-          p('Your request is still being processed.')
+          div(br(),
+              p('Your request is still being processed.'))
         })
       }
     }
