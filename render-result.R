@@ -79,8 +79,8 @@ render.stats <- function(df) {
     }, height = 200)
   
  fluidRow(
-   column(3, plot),
-   column(9, info.table)
+   column(2, plot),
+   column(10, info.table)
  )
   
 }
@@ -252,7 +252,9 @@ render.eQTL <- function(snp) {
     span(header, 
          tags$table(
            tags$tr(
-             gene.header, tags$td(span(eqtl.gene, eqtl.priority))),
+             gene.header, tags$td(span(a(eqtl.gene,
+                                         href=paste0('http://www.genecards.org/cgi-bin/carddisp.pl?gene=', eqtl.gene)),
+                                       eqtl.priority))),
            tags$tr(
              tissue.header, tags$td(eqtl.tissue)),
            tags$tr(
