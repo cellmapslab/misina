@@ -291,7 +291,7 @@ shinyServer(function(input, output, session) {
         query <- parseQueryString(session$clientData$url_search)
         if (!is.null(query[['debug']])) {
           output$result.page <- renderUI({
-            div(h1('An error occurred: '),
+            div(p('An error occurred: '),
                 pre(as.character(err$error)),
                 pre(as.character(err$traceback))
             )
