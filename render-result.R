@@ -164,7 +164,10 @@ render.miR <- function(mir) {
   }
   
   if (as.integer(mir.snp.pos) < 13)
-    snp.pos.priority <- tags$i(class='fa fa-check-circle')
+    snp.pos.priority <- tags$i(class='fa fa-check-circle', 
+                               `data-toggle`="tooltip",
+                               `data-placement`="right",
+                               title='SNPs between 1-12 are prioritized')
   else
     snp.pos.priority <- NULL
   

@@ -29,7 +29,9 @@ shinyUI(
                   tabPanel('Help', img(src='spinner.gif', id='spinner')
                   ),
                   singleton(
-                    tags$head(tags$script(src = "message-handler.js"))
+                    tags$head(tags$script(src = "message-handler.js"))),
+                  singleton(
+                    tags$head(tags$script(src = "main.js"))
                   )
        ))
 )
