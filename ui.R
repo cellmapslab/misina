@@ -1,5 +1,6 @@
 
 library(shiny)
+library(shinyjs)
 
 css.string <- "
   .navbar-static-top { display: none; }

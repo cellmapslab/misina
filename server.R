@@ -1,4 +1,5 @@
 library(shiny)
+library(shinyjs)
 library(DT)
 library(data.table)
 library(dplyr)
@@ -23,6 +24,8 @@ error.file.from.id <- function(i) {
   
   paste0('jobs/error-', i, '.rds')
 }
+
+show.button <- T
 
 get.grasp.cat <- function() {
   ret <- GRASP2() %>% tbl(., 'study') %>% select(PaperPhenotypeCategories) %>% distinct %>% arrange(PaperPhenotypeCategories) %>% as.data.frame %>% `[[`(.,1)
@@ -331,14 +334,25 @@ shinyServer(function(input, output, session) {
     }
   )
   
+  observeEvent(input$conf.button, {
+    toggle('configuration.row')
+    if (show.button) {
+      text(id='conf.button', text='Hide configuration')
+      show.button <<- F
+    } else {
+      text(id='conf.button', text='Show configuration')
+      show.button <<- T
+    }
+  })
   
   output$input.page <- renderUI({
     fluidPage(
+      useShinyjs(),
       # Application title
       titlePanel(div(a(span(tags$i(class='fa fa-dot-circle-o'), 
-                      "Misina"), 
+                            "Misina"), 
                        href='/', style="font-family: 'Lobster', cursive; color: black; text-decoration: none;")
-                       )),
+      )),
       br(),
       
       fluidRow(
@@ -398,37 +412,40 @@ shinyServer(function(input, output, session) {
                    )
                  )
                ),
-               
+               fluidRow(id='configuration.row', style='display: none;',
+                        column(12,
+                               wellPanel(
+                                 h4('Configuration'),
+                                 fluidRow(
+                                   column(6,
+                                          sliderInput('ld.slider', 
+                                                      'LD Proxy Cutoff', 
+                                                      0.1, 1, 0.8, 0.1),
+                                          selectInput('ld.population', 
+                                                      'Population', 
+                                                      list('African'    = 'afr',
+                                                           'American'   = 'amr',
+                                                           'European'   = 'eur',
+                                                           'East Asia'  = 'eas',
+                                                           'South Asia' = 'sas'),
+                                                      selected = 'eur',
+                                                      selectize=F)
+                                   ),
+                                   column(4, offset = 1,
+                                          checkboxGroupInput('mir.target.db', 'Select miRNA Target Databases',
+                                                             c('TargetScan','miranda','Starbase'),
+                                                             c('TargetScan','miranda','Starbase')
+                                          )
+                                   )
+                                 )
+                               ))),
                fluidRow(
                  column(12,
-                        wellPanel(
-                          h4('Configuration'),
-                          
-                          fluidRow(
-                            column(6,
-                                   sliderInput('ld.slider', 'LD Proxy Cutoff', 0.1, 1, 0.8, 0.1),
-                                   selectInput('ld.population', 'Population', list('African'    = 'afr',
-                                                                                   'American'   = 'amr',
-                                                                                   'European'   = 'eur',
-                                                                                   'East Asia'  = 'eas',
-                                                                                   'South Asia' = 'sas'),
-                                               selected = 'eur',
-                                               selectize=F)
-                            ),
-                            
-                            
-                            column(4, offset = 1,
-                                   checkboxGroupInput('mir.target.db', 'Select miRNA Target Databases',
-                                                      c('TargetScan','miranda','Starbase'),
-                                                      c('TargetScan','miranda','Starbase')
-                                   )
-                            )
-                          )
-                        ))),
-               
-               fluidRow(
-                 column(1,
-                        actionButton('submit.button', 'Submit', class='btn-primary')
+                        div(
+                          actionButton('submit.button', 'Submit', class='btn-primary'),
+                          HTML('&nbsp;'),
+                          actionButton('conf.button', 'Show configuration', class='btn')
+                        )
                  )
                )
         ),
@@ -442,4 +459,5 @@ shinyServer(function(input, output, session) {
         br()
       ))
   })
+  
 })
