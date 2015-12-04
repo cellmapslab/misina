@@ -372,7 +372,9 @@ shinyServer(function(input, output, session) {
                  ),
                  hr(),
                  h5('C'),
-                 helpText('or select below a disease to analyze the SNPs associated with it (via GRASP2)'),
+                 helpText('or select below a disease to analyze the SNPs associated with it (via ', 
+                          a('GRASP', href='http://grasp.nhlbi.nih.gov/', target="_blank"), 
+                          ')'),
                  fluidRow(
                    column(5,
                           selectInput('grasp.cat', "Disease/Phenotype Category",
