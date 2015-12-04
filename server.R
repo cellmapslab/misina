@@ -298,7 +298,7 @@ shinyServer(function(input, output, session) {
           })
         } else {
           output$result.page <- renderUI({
-            div(h1('An error occurred: '),
+            div(p('An error occurred: '),
                 pre(as.character(err$error))
             )
           })
