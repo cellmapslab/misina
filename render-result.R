@@ -109,12 +109,22 @@ render.SNP <- function(snp, additional.columns) {
   
   rendered.eqtl <- render.eQTL(snp)
   rendered.gwas <- render.gwas(snp)
+  gene.link <- a(snp.gene, 
+                 href=paste0('http://www.genecards.org/cgi-bin/carddisp.pl?gene=', snp.gene),
+                 target='_blank')
+  
+  if(substr(snp.id, 1, 2) == 'rs')
+    snp.link <- a(snp.id, 
+                  href=paste0('http://www.ncbi.nlm.nih.gov/projects/SNP/snp_ref.cgi?searchType=adhoc_search&type=rs&rs=', snp.id),
+                  target='_blank')
+  else
+    snp.link <- snp.id
   
   span(
-    fluidRow(column(3, wellPanel(div(h4(strong('SNP: '), snp.id),
+    fluidRow(column(3, wellPanel(div(h4(strong('SNP: '), snp.link),
                                      h4(strong('Score: '), score.tag), 
                                      h4(strong('Position: '), snp.pos), 
-                                     h4(strong('Gene: '), snp.gene), 
+                                     h4(strong('Gene: '), gene.link), 
                                      h4(strong('LD Information:')),
                                      #renderTable(as.data.frame(t(additional.col.df)), include.colnames=F),
                                      br(),
@@ -176,7 +186,8 @@ render.miR <- function(mir) {
   
   if (!is.na(mir.accession) && mir.accession != '')
     tit <- a(strong(paste0('miRNA: ', mir.name)), 
-             href = paste0('http://www.mirbase.org/cgi-bin/mature.pl?mature_acc=', mir.accession))
+             href = paste0('http://www.mirbase.org/cgi-bin/mature.pl?mature_acc=', mir.accession),
+             target='_blank')
   else 
     tit <- strong(paste0('miRNA: ', mir.name))
   
@@ -215,7 +226,9 @@ render.miR2 <- function(mir) {
 
 render.eQTL <- function(snp) {
   
-  snp <- snp[, c('eQTL.Gene', 'eQTL.beta', 'eQTL.tstat', 'eQTL.pvalue', 'eQTL.Tissue', 'eQTL.identical.target')]
+  snp <- snp[, c('eQTL.Gene', 'eQTL.beta', 'eQTL.tstat', 'eQTL.pvalue', 
+                 'eQTL.Tissue', 'eQTL.identical.target')]
+  
   snp <- unique(snp)
   no.na <- which(apply(snp, 1, function(x)!all(is.na(x))))
   i <- 1
@@ -262,7 +275,8 @@ render.eQTL <- function(snp) {
          tags$table(
            tags$tr(
              gene.header, tags$td(span(a(eqtl.gene,
-                                         href=paste0('http://www.genecards.org/cgi-bin/carddisp.pl?gene=', eqtl.gene)),
+                                         href=paste0('http://www.genecards.org/cgi-bin/carddisp.pl?gene=', eqtl.gene),
+                                         target='_blank'),
                                        eqtl.priority))),
            tags$tr(
              tissue.header, tags$td(eqtl.tissue)),
