@@ -16,8 +16,6 @@ render.result <- function(df) {
   snp.ord <- order(sapply(snp.list, function(x)max(x$snp.priority)), decreasing = T)
   rendered.snp.list <- lapply(snp.list, render.SNP, additional.columns)
   rendered.snp.list <- rendered.snp.list[snp.ord]
-  rendered.stats <- render.stats(df)
-  df$snp.priority <- NULL
   
   renderUI({
     fluidPage(
@@ -26,7 +24,10 @@ render.result <- function(df) {
             href='/', style="font-family: 'Lobster', cursive; color: black; text-decoration: none;")
       )),
       br(),
-      rendered.stats,
+      fluidRow(
+        column(4, render.stats(df)),
+        column(6, render.help())
+      ),
       br(),
       br(),
       fluidRow(
@@ -79,10 +80,31 @@ render.stats <- function(df) {
     }, height = 200)
   
  fluidRow(
-   column(2, plot),
-   column(10, info.table)
+   column(5, plot),
+   column(7, info.table)
  )
   
+}
+
+render.help <- function() {
+  
+  gen.panel <- function(header, body, type='info') {
+   div(class=sprintf('panel panel-%s', type),
+     div(header, class='panel-heading'),
+     div(body, class='panel-body'))
+  }
+  
+  tu <- tags$i(class='fa fa-thumbs-o-up')
+  
+  main.help.box <- div(
+    div('Resulting SNP-miR pairs are scored based on the following criteria:'),
+    br(),
+    div(span(tu, HTML('&nbsp'), 'miRNA seed type: Scored if seed type is 7- or 8-mer')),
+    div(span(tu, HTML('&nbsp'), 'Relative SNP position: Scored if relative position of SNP is within the miRNA binding site (SNPs in 1-12 bp from 5\' end of miRNA)')),
+    div(span(tu, HTML('&nbsp'), 'miRNA target - eGene match: Scored if miRNA target gene match eQTL gene (miRNA gene identical to eGene)'))
+  )
+  
+  gen.panel('SNP Scoring', main.help.box)
 }
 
 render.SNP <- function(snp, additional.columns) {
