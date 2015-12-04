@@ -158,7 +158,10 @@ render.miR <- function(mir) {
   
   s <- tolower(substr(as.character(mir.seed.category), 1, 4))
   if (s == '7mer' | s == '8mer') {
-    seed.priority <- tags$i(class='fa fa-check-circle')
+    seed.priority <- tags$i(class='fa fa-check-circle', 
+                               `data-toggle`="tooltip",
+                               `data-placement`="right",
+                               title='8mer and 7mer seed types are prioritized')
   } else {
     seed.priority <- NULL
   }
@@ -167,7 +170,7 @@ render.miR <- function(mir) {
     snp.pos.priority <- tags$i(class='fa fa-check-circle', 
                                `data-toggle`="tooltip",
                                `data-placement`="right",
-                               title='SNPs between 1-12 are prioritized')
+                               title='SNPs located between 1-12 bp in 5\' end of miRNA are prioritized')
   else
     snp.pos.priority <- NULL
   
@@ -229,7 +232,10 @@ render.eQTL <- function(snp) {
     eqtl.sameas <- s$eQTL.identical.target
     
     if (eqtl.sameas == T) {
-      eqtl.priority <- tags$i(class='fa fa-check-circle')
+      eqtl.priority <- tags$i(class='fa fa-check-circle', 
+                               `data-toggle`="tooltip",
+                               `data-placement`="right",
+                               title='SNPs with identical target gene and eGene are prioritized')
     } else {
       eqtl.priority <- NULL
     }
