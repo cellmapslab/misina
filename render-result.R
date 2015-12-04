@@ -49,7 +49,7 @@ render.result <- function(df) {
           ),
           tabPanel('Table view',
                    br(),
-                   DT::renderDataTable(df, style='bootstrap', width='100%', rownames=F)
+                   render.table.view(df)
           ),
           tabPanel('Download results', 
                    br(),
@@ -209,7 +209,7 @@ render.miR2 <- function(mir) {
 
 render.eQTL <- function(snp) {
   
-  snp <- snp[, c('eQTL.Gene', 'eQTL.beta', 'eQTL.tstat', 'eQTL.pvalue', 'eQTL.Tissue', 'eQTL.Gene.Same.as.Target.gene')]
+  snp <- snp[, c('eQTL.Gene', 'eQTL.beta', 'eQTL.tstat', 'eQTL.pvalue', 'eQTL.Tissue', 'eQTL.identical.target')]
   snp <- unique(snp)
   no.na <- which(apply(snp, 1, function(x)!all(is.na(x))))
   i <- 1
@@ -223,7 +223,7 @@ render.eQTL <- function(snp) {
     eqtl.pvalue <- format.pval(s$eQTL.pvalue, 2)
     eqtl.effect.p.t <- sprintf('%.2f (%s)', eqtl.effect, eqtl.pvalue)
     eqtl.tissue <- s$eQTL.Tissue
-    eqtl.sameas <- s$eQTL.Gene.Same.as.Target.gene 
+    eqtl.sameas <- s$eQTL.identical.target
     
     if (eqtl.sameas == T) {
       eqtl.priority <- tags$i(class='fa fa-check-circle')
@@ -316,8 +316,35 @@ score.snps <- function(df) {
   score <- score + as.integer(df$SNP.position.in.miR < 13)
   
   #eqtl gene == target gene
-  df$eQTL.Gene.Same.as.Target.gene[is.na(df$eQTL.Gene.Same.as.Target.gene)] <- F
-  score <- score + as.integer(df$eQTL.Gene.Same.as.Target.gene == T)
+  df$eQTL.identical.target[is.na(df$eQTL.identical.target)] <- F
+  score <- score + as.integer(df$eQTL.identical == T)
   
   score
+}
+
+render.table.view <-function(df) {
+  #colnames(df) <- gsub('.', ' ', colnames(df), fixed = T)
+  
+  div(#render.table.column.selection(df),
+      DT::renderDataTable(df, style='bootstrap', width='100%', rownames=F)
+  )
+  
+}
+
+render.table.column.selection <- function(df) {
+  itemfunc <- I("function(item, escape) {
+            return '<div>' +
+                (item.name ? 'eppek:' + escape(item) : 'duppek') +
+            '</div>';}")
+  
+  selectizeInput('table.view.column.selection', 
+                 label='Select columns to be displayed: ',
+                 choices=colnames(df),
+                 selected=colnames(df),
+                 multiple = T,
+                 width='100%',
+                 options=list(
+                   plugins=list('remove_button'),
+                   render=list(option=itemfunc))
+  )
 }

@@ -102,7 +102,7 @@ run.pipeline <- function(inputs) {
   gtex.eqtl <- tbl(gtex, 'GTExv6')
   gtex.eqtl <- dplyr::rename(gtex.eqtl, eQTL.beta=beta, eQTL.tstat=t_stat, 
                              eQTL.pvalue=p_value, eQTL.Gene=gene_name, 
-                             eQTL.Souce=eQTL.source, eQTL.Tissue=eQTL.tissue)
+                             eQTL.Source=eQTL.source, eQTL.Tissue=eQTL.tissue)
 
   tmp.snps <- as.list(result.table$SNP)
   gtex.eqtl <- dplyr::collect(gtex.eqtl %>% filter(SNP %in% tmp.snps))
@@ -113,7 +113,7 @@ run.pipeline <- function(inputs) {
   
   ultimate <- ultimate[order(ultimate$SNP),]
   #add one more column denoting if the target gene == eGene
-  ultimate$eQTL.Gene.Same.as.Target.gene <- simplify2array(Map(function(gene, egene){
+  ultimate$eQTL.identical.target <- simplify2array(Map(function(gene, egene){
     any(toupper(gene) == strsplit(toupper(egene), ',')[[1]])},
     ultimate$gene, ultimate$eQTL.Gene))
   
