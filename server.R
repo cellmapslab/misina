@@ -25,7 +25,6 @@ error.file.from.id <- function(i) {
   paste0('jobs/error-', i, '.rds')
 }
 
-show.button <- T
 
 get.grasp.cat <- function() {
   ret <- GRASP2() %>% tbl(., 'study') %>% select(PaperPhenotypeCategories) %>% distinct %>% arrange(PaperPhenotypeCategories) %>% as.data.frame %>% `[[`(.,1)
@@ -50,6 +49,8 @@ options(shiny.maxRequestSize=35*1024^2)
 
 shinyServer(function(input, output, session) {
   
+  show.button <- T
+
   source('render-result.R')
   
   #redirect to result check page if ?job= is given
