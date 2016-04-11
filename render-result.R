@@ -73,7 +73,7 @@ render.stats <- function(df) {
   
   tmp <- unique(df[, c('SNP', 'snp.priority')])
   plot <- renderPlot({
-    qplot(tmp$snp.priority, xlab='SNP Scores (0-3)') +
+    qplot(tmp$snp.priority, xlab='SNP Scores (0-3)', geom='bar') +
       scale_x_discrete(limits=0:3) +
       scale_y_discrete() +
       theme_minimal()

@@ -397,7 +397,7 @@ generate.final.table <- function(targets.gr, CAD.snps.gr, snp.mir.overlap.matrix
   snps.in.seed <- within.seed(overlapping.snps, overlapping.targets.gr)
   snp.seed.df <- data.frame(SNP=overlapping.snps[queryHits(snps.in.seed)]$SNP,
                             mir=overlapping.targets.gr[subjectHits(snps.in.seed)]$mir,
-                            SNP.bwn.2.7=T,
+                            SNP.bwn.2.7=rep(T, length(snps.in.seed)),
                             stringsAsFactors = F)
   final.table <- merge(final.table, snp.seed.df, by.x=c('SNP', 'mir'),
                        by.y=c('SNP', 'mir'), all.x=T)
