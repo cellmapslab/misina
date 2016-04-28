@@ -13,7 +13,7 @@ starbase.gr <- readRDS('data/processed/starbase.Rds')
 targetscan.gr <- readRDS('data/processed/targetscan.Rds')
 miranda.gr <- readRDS('data/processed/miranda.Rds')
 mir.targets.gr <- merge.granges.aggressively(meta.columns=list(mir.target.db=c('Starbase', 'TargetScan', 'miranda')),
-                                             starbase.gr, targetscan.gr, miranda.gr)
+                                             list(starbase.gr, targetscan.gr, miranda.gr))
 
 
 ##########################  CAD risk snps
