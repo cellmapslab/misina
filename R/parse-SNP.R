@@ -15,8 +15,11 @@ within.seed <- function(snps, mir.bs) {
   findOverlaps(snps, flank(resize(mir.bs, 1, fix='end'), 6, start=T))
 }
 
+#we use fix='end' because these mir BSs are on the mRNA side, not in the miR side
 snp.relative.pos <- function(snps, mir.bs) {
-  abs(start(snps) - start(resize(mir.bs, 1, fix='end'))) + 1
+  d <- start(resize(mir.bs, 1, fix='end')) - start(snps)
+  d <- d * ifelse(strand(mir.bs) == '+', 1, -1)
+  d + ifelse(d >= 0, 1, 0) #1nt upstream of 5' end of miR is called -1, not zero
 }
 
 merge.granges.aggressively <- function(meta.columns, grs) {
