@@ -54,8 +54,8 @@ CAD.SNP.gr <- get.hg19.positions2(CAD.SNP.df, dbSNP.file = dbsnp.file)
 # mcols(CAD.SNP.gr)$pval <- snp.p[ match(CAD.SNP.gr$SNP, snp.p$legendrs),2]
 # mcols(CAD.SNP.gr)$n.studies <- snp.p[ match(CAD.SNP.gr$SNP, snp.p$legendrs),3]
 
-
-snp.mir.overlap.hits <- findOverlaps(CAD.SNP.gr, unique(mir.targets.gr))
+#find overlap between snps and miR BS+25nt flanking region
+snp.mir.overlap.hits <- findOverlaps(CAD.SNP.gr, unique(mir.targets.gr)+25) #take flanking region (25ntx2) into acc.
 snp.mir.overlap.matrix <- as.matrix(snp.mir.overlap.hits)
 if(length(snp.mir.overlap.matrix) == 0)
   stop('There is no overlap between risk snps and miR targets.')
