@@ -84,31 +84,46 @@ extended.eqtl <- readRDS('data/processed/eQTL-mono-macro-with-LD.Rds')
 extended.eqtl <- extended.eqtl[,c('SNP', 'IsProxyOf', 't.stat', 'p.value', 'FDR', 'gene', 'eQTL.source', 'eQTL.tissue')]
 names(extended.eqtl) <- c('SNP', 'eQTL.IsProxyOf', 'eQTL.tstat', 'eQTL.pvalue', 'eQTL.FDR', 'eQTL.Gene', 'eQTL.Source', 'eQTL.Tissue')
 
-gtex.eqtl <- readRDS('data/processed/GTEx.Rds')
-gtex.eqtl <- gtex.eqtl[, c('SNP', 'T_Stat', 'P_Val', 'Gene_Name', 'eQTL.source', 'eQTL.tissue')]
-names(gtex.eqtl) <- c('SNP', 'eQTL.tstat', 'eQTL.pvalue', 'eQTL.Gene', 'eQTL.Source', 'eQTL.Tissue')
+extended.eqtl <- extended.eqtl[extended.eqtl$SNP %in% result.table$SNP,]
+
+#=====================================
+
+
+  gtex <- src_sqlite('data/processed/GTExv6.sqlite')
+  gtex.eqtl <- tbl(gtex, 'GTExv6')
+  gtex.eqtl <- dplyr::rename(gtex.eqtl, eQTL.beta=beta, eQTL.tstat=t_stat,
+                             eQTL.pvalue=p_value, eQTL.Gene=gene_name,
+                             eQTL.Source=eQTL.source, eQTL.Tissue=eQTL.tissue)
+
+  tmp.snps <- as.list(result.table$SNP)
+  gtex.eqtl <- dplyr::collect(gtex.eqtl %>% filter(SNP %in% tmp.snps))
+  gtex.eqtl <- select(gtex.eqtl, -eQTL.beta)
+
+
+#=====================================
+gtex.eqtl <- as.data.frame(gtex.eqtl)
 gtex.eqtl[] <- lapply(gtex.eqtl, as.character)
 
-final.eqtl <- bind_rows(extended.eqtl, gtex.eqtl)
+final.eqtl <- bind_rows(extended.eqtl, as.data.frame(gtex.eqtl))
 final.eqtl$eQTL.IsProxyOf[is.na(final.eqtl$eQTL.IsProxyOf)] <- 'direct'
 final.eqtl$eQTL.IsProxyOf[final.eqtl$eQTL.IsProxyOf == ''] <- 'direct'
 
 ultimate <- merge(result.table, final.eqtl, all.x=T, by='SNP')
-ucol <- ncol(ultimate)
 #move eqtl columns towards the beginning
-ultimate <- select(ultimate, SNP:mir.target.db, starts_with('eQTL'), everything())
+ultimate <- select(ultimate, SNP:mir.target.db, mir.median.expression, starts_with('eQTL'), everything())
 ultimate <- aggregate(ultimate,
                       list(SNP=ultimate$SNP, MIRR=ultimate$mir),
                       function(x)paste(unique(x[x!='']), collapse=','))
 ultimate <- ultimate[,-(1:2)]
 
 ultimate <- ultimate[order(ultimate$SNP),]
+
 #add one more column denoting if the target gene == eGene
 ultimate$eQTL.Gene.Same.as.Target.gene <- simplify2array(Map(function(gene, egene){
   any(toupper(gene) == strsplit(toupper(egene), ',')[[1]])},
   ultimate$gene, ultimate$eQTL.Gene))
 
-ultimate <- select(ultimate, SNP:mir.target.db, starts_with('eQTL'), everything())
+ultimate <- select(ultimate, SNP:mir.target.db, mir.median.expression, starts_with('eQTL'), everything())
 
 write.table(ultimate, '~/Risk-SNPs-within-miR-BS-corrected-eQTL.tsv', row.names=F, sep='\t')
 
