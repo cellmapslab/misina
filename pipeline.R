@@ -36,7 +36,15 @@ gwas.cat.snps <- data.frame(SNPs=gwas.cat.snps.raw$SNPs,
                             Phenotype=gwas.cat.snps.raw$Disease.Trait,
                             Risk.SNP.Source='GWAS catalog',
                             stringsAsFactors = F)
-total.snps <- rbind(conf.snps, stroke.snps, nature.snps, gwas.cat.snps)
+
+#September 2015 CARDIOGRAM SNPs
+nature.cardiogram2 <- read.csv('data/base/nature_cardiogram_September_2015_doi_10.1038_ng.3396.csv', stringsAsFactors = F, strip.white = T)
+nature.cardiogram2 <- data.frame(SNPs=nature.cardiogram2$snp,
+                          Phenotype='Coronary artery disease',
+                          Risk.SNP.Source='CARDIOGRAMplusC4D_Sept2015',
+                          stringsAsFactors = F)
+
+total.snps <- rbind(conf.snps, stroke.snps, nature.snps, nature.cardiogram2,gwas.cat.snps)
 total.snps <- aggregate(total.snps,
                          list(SNPs=total.snps$SNPs),
                          function(x)paste0(unique(x), collapse=','))
