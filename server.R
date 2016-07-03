@@ -338,10 +338,10 @@ shinyServer(function(input, output, session) {
   observeEvent(input$conf.button, {
     toggle('configuration.row')
     if (show.button) {
-      text(id='conf.button', text='Hide configuration')
+      html(id='conf.button', 'Hide configuration')
       show.button <<- F
     } else {
-      text(id='conf.button', text='Show configuration')
+      html(id='conf.button', 'Show configuration')
       show.button <<- T
     }
   })
