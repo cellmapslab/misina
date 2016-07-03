@@ -59,12 +59,12 @@ eqtl_cad_tbl %<>%
 
 eqtl_cad_tbl %<>% rename(SNPs=SNP)
 
-extended.eqtl <- extend.with.LD(as.data.frame(eqtl_cad_tbl), self.snp.label = 'direct')
+extended.eqtl <- extend.with.LD(as.data.frame(eqtl_cad_tbl), self.snp.label = 'direct', aggregate.results = F)
 extended.eqtl.tbl <- extended.eqtl %>% tbl_df %>% dplyr::select(SNP:R2, IsProxyOf:gene)
 extended.eqtl.tbl %<>% rename(eQTL.tissue=cell)
 extended.eqtl.tbl$eQTL.source <- 'DHM'
 
-saveRDS(as.data.frame(extended.eqtl.tbl), 'data/processed/eQTL-mono-macro-with-LD.Rds')
+saveRDS(as.data.frame(extended.eqtl.tbl), 'data/processed/eQTL-mono-macro-with-LD-nonaggregated.Rds')
 
 
 # probeID2nuID(c('ILMN_2271149', 'ILMN_1709590', 'ILMN_1781388'),
