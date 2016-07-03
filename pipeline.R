@@ -44,7 +44,16 @@ nature.cardiogram2 <- data.frame(SNPs=nature.cardiogram2$snp,
                           Risk.SNP.Source='CARDIOGRAMplusC4D_Sept2015',
                           stringsAsFactors = F)
 
-total.snps <- rbind(conf.snps, stroke.snps, nature.snps, nature.cardiogram2,gwas.cat.snps)
+
+# Additional confidential SNPs May 2016 -----------------------------------
+additional.CAD.snps <- read.csv('data/base/confidential_May2016.csv', stringsAsFactors = F, strip.white = T, header = F)
+additional.CAD.snps <- data.frame(SNPs=additional.CAD.snps$V1,
+                          Phenotype='Coronary artery disease',
+                          Risk.SNP.Source='ConfidentialMay2016',
+                          stringsAsFactors = F)
+
+
+total.snps <- rbind(conf.snps, stroke.snps, nature.snps, nature.cardiogram2,gwas.cat.snps, additional.CAD.snps)
 total.snps <- aggregate(total.snps,
                          list(SNPs=total.snps$SNPs),
                          function(x)paste0(unique(x), collapse=','))
@@ -70,7 +79,8 @@ if(length(snp.mir.overlap.matrix) == 0)
 
 result.table <- generate.final.table(unique(mir.targets.gr),
                                      CAD.SNP.gr,
-                                     snp.mir.overlap.matrix, annotate=T)
+                                     snp.mir.overlap.matrix, annotate=T,
+                                     mir.expression = T)
 
 
 # visualize the results ---------------------------------------------------
@@ -80,7 +90,7 @@ visualize(unique(mir.targets.gr), CAD.SNP.gr, snp.mir.overlap.matrix)
 
 # eQTL --------------------------------------------------------------------
 
-extended.eqtl <- readRDS('data/processed/eQTL-mono-macro-with-LD.Rds')
+extended.eqtl <- readRDS('data/processed/eQTL-mono-macro-with-LD-nonaggregated.Rds')
 extended.eqtl <- extended.eqtl[,c('SNP', 'IsProxyOf', 't.stat', 'p.value', 'FDR', 'gene', 'eQTL.source', 'eQTL.tissue')]
 names(extended.eqtl) <- c('SNP', 'eQTL.IsProxyOf', 'eQTL.tstat', 'eQTL.pvalue', 'eQTL.FDR', 'eQTL.Gene', 'eQTL.Source', 'eQTL.Tissue')
 
@@ -89,20 +99,20 @@ extended.eqtl <- extended.eqtl[extended.eqtl$SNP %in% result.table$SNP,]
 #=====================================
 
 
-  gtex <- src_sqlite('data/processed/GTExv6.sqlite')
-  gtex.eqtl <- tbl(gtex, 'GTExv6')
-  gtex.eqtl <- dplyr::rename(gtex.eqtl, eQTL.beta=beta, eQTL.tstat=t_stat,
-                             eQTL.pvalue=p_value, eQTL.Gene=gene_name,
-                             eQTL.Source=eQTL.source, eQTL.Tissue=eQTL.tissue)
+gtex <- src_sqlite('data/processed/GTExv6.sqlite')
+gtex.eqtl <- tbl(gtex, 'GTExv6')
+gtex.eqtl <- dplyr::rename(gtex.eqtl, eQTL.effectsize=beta, eQTL.tstat=t_stat,
+                           eQTL.pvalue=p_value, eQTL.Gene=gene_name,
+                           eQTL.Source=eQTL.source, eQTL.Tissue=eQTL.tissue)
 
-  tmp.snps <- as.list(result.table$SNP)
-  gtex.eqtl <- dplyr::collect(gtex.eqtl %>% filter(SNP %in% tmp.snps))
-  gtex.eqtl <- select(gtex.eqtl, -eQTL.beta)
+tmp.snps <- as.list(result.table$SNP)
+gtex.eqtl <- dplyr::collect(gtex.eqtl %>% filter(SNP %in% tmp.snps))
+#gtex.eqtl <- select(gtex.eqtl, -eQTL.beta) #also include beta values for easier interpretation
 
 
 #=====================================
 gtex.eqtl <- as.data.frame(gtex.eqtl)
-gtex.eqtl[] <- lapply(gtex.eqtl, as.character)
+#gtex.eqtl[] <- lapply(gtex.eqtl, as.character)
 
 final.eqtl <- bind_rows(extended.eqtl, as.data.frame(gtex.eqtl))
 final.eqtl$eQTL.IsProxyOf[is.na(final.eqtl$eQTL.IsProxyOf)] <- 'direct'
@@ -110,22 +120,23 @@ final.eqtl$eQTL.IsProxyOf[final.eqtl$eQTL.IsProxyOf == ''] <- 'direct'
 
 ultimate <- merge(result.table, final.eqtl, all.x=T, by='SNP')
 #move eqtl columns towards the beginning
-ultimate <- select(ultimate, SNP:mir.target.db, mir.median.expression, starts_with('eQTL'), everything())
-ultimate <- aggregate(ultimate,
-                      list(SNP=ultimate$SNP, MIRR=ultimate$mir),
-                      function(x)paste(unique(x[x!='']), collapse=','))
-ultimate <- ultimate[,-(1:2)]
+ultimate <- select(ultimate, SNP:mir.target.db, mirmine.median.expression, mirtissueatlas.median.expression,starts_with('eQTL'), everything())
 
-ultimate <- ultimate[order(ultimate$SNP),]
+#aggregation makes it compact, but difficult to interpret. so avoid it
+# ultimate <- aggregate(ultimate,
+#                       list(SNP=ultimate$SNP, MIRR=ultimate$mir, X=ultimate$gene, Y=ultimate$eQTL.Gene, Z=ultimate$eQTL.Source, T=ultimate$eQTL.Tissue),
+#                       function(x)paste(unique(x[x!='']), collapse=','))
+# ultimate <- ultimate[,-(1:6)]
+# ultimate <- ultimate[order(ultimate$SNP),]
 
 #add one more column denoting if the target gene == eGene
 ultimate$eQTL.Gene.Same.as.Target.gene <- simplify2array(Map(function(gene, egene){
   any(toupper(gene) == strsplit(toupper(egene), ',')[[1]])},
   ultimate$gene, ultimate$eQTL.Gene))
 
-ultimate <- select(ultimate, SNP:mir.target.db, mir.median.expression, starts_with('eQTL'), everything())
+ultimate <- select(ultimate, SNP:mir.target.db, mirmine.median.expression, mirtissueatlas.median.expression,starts_with('eQTL'), everything())
 
-write.table(ultimate, '~/Risk-SNPs-within-miR-BS-corrected-eQTL.tsv', row.names=F, sep='\t')
+write.table(ultimate, '~/Risk-SNPs-within-miR-BS-May13_2016.tsv', row.names=F, sep='\t')
 
 
 # Ghanbari section --------------------------------------------------------
