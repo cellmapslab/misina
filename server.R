@@ -34,9 +34,14 @@ get.grasp.cat <- function() {
 }
 
 get.grasp.phenotype <- function(ct) {
-  ret <- GRASP2() %>% tbl(., 'study') %>% select(PaperPhenotypeCategories, PaperPhenotypeDescription) %>%
+  ret <- GRASP2() %>% 
+    tbl(., 'study') %>% 
+    select(PaperPhenotypeCategories, PaperPhenotypeDescription) %>%
     filter_(.dots=paste0('PaperPhenotypeCategories %like% "%', ct, '%"')) %>%
-    select(PaperPhenotypeDescription) %>% distinct %>% as.data.frame %>% `[[`(., 1) %>% sort
+    select(PaperPhenotypeDescription) %>% 
+    distinct %>% 
+    as.data.frame %>% `[[`(., 1) %>% 
+    sort
   
   #"Beh\xe7et's disease" causes problems
   Encoding(ret) <- 'latin1'
@@ -44,14 +49,15 @@ get.grasp.phenotype <- function(ct) {
   as.list(ret)
 }
 
-#set file upload limit to 35M
-options(shiny.maxRequestSize=35*1024^2)
+#set file upload limit to 5M
+options(shiny.maxRequestSize=5*1024^2)
 
 shinyServer(function(input, output, session) {
   
   show.button <- T
 
   source('render-result.R')
+  source('render-mirexp.R')
   
   #redirect to result check page if ?job= is given
   observe({
@@ -59,6 +65,9 @@ shinyServer(function(input, output, session) {
     if (!is.null(query[['job']])) {
       result.check.page(query[['job']])
       updateTabsetPanel(session, 'navbar.panel', selected='Results')
+    } else if(!is.null(query[['mir']])) {
+      mir.check.page(query[['mir']])
+      updateTabsetPanel(session, 'navbar.panel', selected='microRNA Expression')
     }
   })
   
@@ -280,6 +289,11 @@ shinyServer(function(input, output, session) {
   }
   
   output$result.page <- renderUI({h1('...')})
+  output$mir.page <- renderUI({h1('...')})
+  
+  mir.check.page <- function(mir) {
+    output$mir.page <- render.mir.expression(mir) 
+  }
   
   result.check.page <- function(i) {
     

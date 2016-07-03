@@ -175,7 +175,8 @@ render.LD <- function(ld) {
 }
 
 render.miR <- function(mir) {
-  mir <- mir[, c('mir', 'gene', 'mir.target.pos', 'mirbase_acc', 'mir.target.db', 'miranda.conserved', 'score', 'seed.category', 'SNP.position.in.miR')]
+  mir <- mir[, c('mir', 'gene', 'mir.target.pos', 'mirbase_acc', 'mir.target.db', 
+                 'miranda.conserved', 'score', 'seed.category', 'SNP.position.in.miR')]
   mir <- unique(mir)
   mir.name <- mir$mir
   mir.target <- mir$gene

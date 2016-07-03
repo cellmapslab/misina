@@ -24,8 +24,9 @@ shinyUI(
                  tags$link(href='https://fonts.googleapis.com/css?family=Lobster', rel='stylesheet', type='text/css')),
        navbarPage("Misina", id='navbar.panel',
                   tabPanel("Input", htmlOutput('input.page')),
-                  
                   tabPanel('Results', htmlOutput('result.page')
+                  ),
+                  tabPanel('microRNA Expression', htmlOutput('mir.page')
                   ),
                   tabPanel('Help', img(src='spinner.gif', id='spinner')
                   ),
