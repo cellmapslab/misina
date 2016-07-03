@@ -3,7 +3,7 @@ library(tidyr)
 library(dplyr)
 library(jsonlite)
 
-mat <- read.delim('data/base/mirTissueAtlas/data_matrix_quantile.txt', 
+mat <- read.delim('data/base/mirTissueAtlas/data_matrix_quantile.txt',
                   stringsAsFactors = F, dec=',', check.names = F)
 mat$mir <- rownames(mat)
 longmat <- gather(mat, 'tissue', 'expression', -mir)
@@ -11,7 +11,7 @@ tissue.groups <- trimws(gsub('[\\.\\d_]', ' ', longmat$tissue, perl = T))
 longmat$tissue <- tissue.groups
 
 
-mat2 <- read.delim('data/base/mirTissueAtlas/final_GSE11879_series_matrix_quantile.txt', 
+mat2 <- read.delim('data/base/mirTissueAtlas/final_GSE11879_series_matrix_quantile.txt',
                    stringsAsFactors = F, check.names = F)
 mat2$mir <- rownames(mat2)
 longmat2 <- gather(mat2, 'tissue', 'expression', -mir)
@@ -24,7 +24,7 @@ final.matrix.grouped <- aggregate(final.matrix$expression, list(mir=final.matrix
 colnames(final.matrix.grouped)[3] <- 'expression'
 #x = spread(final.matrix.grouped, tissue, expression)
 
-final.matrix.json <- by(final.matrix.grouped, final.matrix.grouped$mir, function(df){ 
+final.matrix.json <- by(final.matrix.grouped, final.matrix.grouped$mir, function(df){
   toJSON(df[, c('expression', 'tissue')])
   }, simplify = F)
 final.matrix.json <- data.frame(do.call(rbind, final.matrix.json), stringsAsFactors = F)
@@ -34,7 +34,7 @@ saveRDS(final.matrix, 'data/processed/mirtissueatlas_grouped_2016_may.Rds')
 
 # human readable ----------------------------------------------------------
 
-result.human <- by(final.matrix.grouped, final.matrix.grouped$mir, function(df){ 
+result.human <- by(final.matrix.grouped, final.matrix.grouped$mir, function(df){
   paste(df$tissue, round(df$expression, 1), sep = ':', collapse = ',')
   }, simplify = F)
 
