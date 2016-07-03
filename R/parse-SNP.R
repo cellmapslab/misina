@@ -430,3 +430,21 @@ generate.final.table <- function(targets.gr, CAD.snps.gr, snp.mir.overlap.matrix
 
   as.data.frame(final.table, stringsAsFactors=F)
 }
+
+get.mir.expression <- function(df, json=T) {
+  if (json) {
+    mirmine <- readRDS('data/processed/mirmine_median_json_2016_april.Rds')
+  } else {
+    mirmine <- readRDS('data/processed/mirmine_median_humanreadable_2016_april.Rds')
+  }
+  result <- merge(df, mirmine, all.x=T, sort=F)
+  result$mir.split <- NULL
+
+  if (json) {
+    mirtissue <- readRDS('data/processed/mirtissueatlas_median_json_2016_may.Rds')
+  } else {
+    mirtissue <- readRDS('data/processed/mirtissueatlas_median_humanreadable_2016_april.Rds')
+  }
+  result <- merge(result, mirtissue, all.x=T, sort=F)
+  result
+}
