@@ -324,7 +324,7 @@ build.CAD.SNP.gr <- function(snps,
 }
 
 generate.final.table <- function(targets.gr, CAD.snps.gr, snp.mir.overlap.matrix,
-                                 annotate=T, aggregate.results=T) {
+                                 annotate=T, aggregate.results=T, mir.expression=F) {
   overlapping.targets.gr <- targets.gr[snp.mir.overlap.matrix[,2]]
   overlapping.snps <- CAD.snps.gr[snp.mir.overlap.matrix[,1]]
 
@@ -419,6 +419,15 @@ generate.final.table <- function(targets.gr, CAD.snps.gr, snp.mir.overlap.matrix
                        by.y=c('SNP', 'mir'), all.x=T)
   #move new column next to mir column
   final.table <- final.table[, c(1:13, length(final.table), 14:(length(final.table)-1))]
+
+  if(mir.expression) {
+    # Join miR expression -----------------------------------------------------
+    mirmine <- get.mir.expression(final.table, json=F)
+    final.table <- merge(final.table, mirmine, all.x=T)
+    #move new column next to mir column
+    final.table <- final.table[, c(1:13, length(final.table), 14:(length(final.table)-1))] #mirmine
+    final.table <- final.table[, c(1:13, length(final.table), 14:(length(final.table)-1))] #mirtissueatlas
+  }
 
   if (aggregate.results) {
     #merge duplicate columns through paste0(..., collapse=',')
