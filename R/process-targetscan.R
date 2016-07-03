@@ -4,31 +4,45 @@ library(dplyr)
 library(rtracklayer)
 
 mir.target.file <- 'data/base/Predicted_Targets.hg19.bed'
-mir.info.file <- 'data/base/Predicted_Targets_Info.txt'
+mir.info.file <- 'data/base/Conserved_Family_Info.txt'
+mir.family.file <- 'data/base/miR_Family_Info.txt'
 
-mir.targets.gr <- import(mir.target.file, genome = 'hg19')
-mir.targets.gr$geneName <- sapply(strsplit(mir.targets.gr$name, ':'), `[[`, 1)
-mir.targets.gr$mir <- sapply(strsplit(mir.targets.gr$name, ':'), `[[`, 2)
-mir.targets.gr$name <- NULL
-mcols(mir.targets.gr) <- mcols(mir.targets.gr)[, c('score', 'geneName', 'mir')]
-names(mcols(mir.targets.gr)) <- c('score', 'gene', 'mir')
-mir.targets.gr <- keepStandardChromosomes(mir.targets.gr)
-mir.targets.gr
 
+# Read the bed file as a tsv ----------------------------------------------
+
+mir.targets.gr <- read_delim(mir.target.file, delim='\t', col_names = F)
+mir.targets.gr$geneName <- sapply(strsplit(mir.targets.gr$X4, ':'), `[[`, 1)
+mir.targets.gr$mir <- sapply(strsplit(mir.targets.gr$X4, ':'), `[[`, 2)
+mir.targets.gr$X4 <- NULL
+mir.targets.gr$X7 <- NULL
+mir.targets.gr$X8 <- NULL
+mir.targets.gr$X9 <- NULL
+mir.targets.gr$X10 <- NULL
+mir.targets.gr$X11 <- NULL
+mir.targets.gr$X12 <- NULL
+colnames(mir.targets.gr) <- c('seqname', 'start', 'end', 'score', 'strand', 'gene', 'mir.family')
 
 #get seed type info from TargetScan info file
 info <- read_delim(mir.info.file, delim='\t', na = 'NULL')
 info <- info[info$`Species ID` == 9606,]
 info <- info[, c("Gene Symbol", "miR Family", 'Seed match')]
-colnames(info)[colnames(info) == 'Seed match'] <- "seed.match"
+colnames(info) <- c('gene', 'mir.family', 'seed.match')
 
-target.tbl <- tbl_df(as.data.frame(mcols(mir.targets.gr)))
+x <- full_join(mir.targets.gr, info)
+x <- group_by(x, seqname, start, end, score, strand, gene, mir.family) %>% distinct()
+last <- left_join(mir.targets.gr, x)
 
-x <- full_join(target.tbl, info, 
-              by=c('gene'='Gene Symbol', 'mir'='miR Family'))
-x <- group_by(x, gene, mir) %>% distinct()
-last <- left_join(target.tbl, x, by=c('score', 'gene', 'mir'))
-last <- dplyr::rename(last, seed.category=seed.match)
+mir.family <- read_delim(mir.family.file, delim='\t', na = c('', '-'))
+mir.family <- mir.family[mir.family$`Species ID` == 9606,]
+mir.family <- mir.family[, c(1,4,7)]
+colnames(mir.family) <- c('mir.family', 'mir', 'mirbase_acc')
 
-mcols(mir.targets.gr) <- last
-saveRDS(mir.targets.gr, 'data/processed/targetscan.Rds')
+last <- left_join(last, mir.family, by='mir.family')
+
+gr <- GRanges(seqnames = last$seqname,
+              ranges = IRanges(start = last$start, last$end),
+              strand = last$strand)
+colnames(last)[8] <- 'seed.category'
+mcols(gr) <- last[, c('score', 'gene', 'mir', 'mir.family', 'seed.category', 'mirbase_acc')]
+
+saveRDS(gr, 'data/processed/targetscan.Rds')
