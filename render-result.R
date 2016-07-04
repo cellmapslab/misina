@@ -175,10 +175,11 @@ render.LD <- function(ld) {
 }
 
 render.miR <- function(mir) {
-  mir <- mir[, c('mir', 'gene', 'mir.target.pos', 'mirbase_acc', 'mir.target.db', 
+  mir <- mir[, c('SNP', 'mir', 'gene', 'mir.target.pos', 'mirbase_acc', 'mir.target.db', 
                  'miranda.conserved', 'score', 'seed.category', 'SNP.position.in.miR')]
   mir <- unique(mir)
   mir.name <- mir$mir
+  SNP <- mir$SNP
   mir.target <- mir$gene
   mir.target.pos <- mir$mir.target.pos
   mir.accession <- mir$mirbase_acc
@@ -230,6 +231,13 @@ render.miR <- function(mir) {
            tags$td(strong('Seed category')), tags$td(span(mir.seed.category, '  ', seed.priority))),
          tags$tr(
            tags$td(strong('miRNA SNP position')), tags$td(span(mir.snp.pos, snp.pos.priority))),
+         tags$tr(tags$td(strong('miRNA expression')),
+                 tags$td(a('miRmine/mir tissue atlas', href=paste0('/?mir=', mir.name),
+                           target="_blank"))),
+         tags$tr(tags$td(strong('miRNA/SNP effect ')), 
+                 tags$td(a('mirSNP', 
+                           href=sprintf('http://bioinfo.bjmu.edu.cn/mirsnp/search/SingleSearch/?gene=&mrna=&what=rsnp&snp=%s&mirna=%s', SNP, mir.name),
+                           target="_blank"))),
          class=shiny.table.class, style='display: inline-block;'),
        style='display: inline-block;')
 }
