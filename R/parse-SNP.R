@@ -166,21 +166,27 @@ get.hg19.positions2 <- function(CAD.SNP.df, dbSNP.file) {
 get.hg19.positions <- function(CAD.SNP.df, dbSNP.file) {
   message('Loading dbSNP...')
 
-  conn <- dbConnect(RSQLite::SQLite(), dbSNP.file)
-  query.snps <- paste0('"', paste0(CAD.SNP.df$SNP, collapse='","'), '"')
+  dbsnp <- lapply(split(CAD.SNP.df$SNP, ceiling(seq_along(CAD.SNP.df$SNP)/5000)),
+                              function(snps) {
 
-  #TODO: Use dbbind() when new RSQLite (> 1.0) is published
-  query <- paste0('select V1,V2,V3,V4 from f where V4 in (', query.snps,')')
-  #check if the query length is longer than sqlite limit
-  if(nchar(query)>1e6) {
-    #TODO: split snps into smaller pieces
-    stop('dbSNP SQL query too long...')
-  }
-
-  dbsnp <- dbGetQuery(conn, query)
-  dbDisconnect(conn)
-
-  colnames(dbsnp) <- c('chr', 'start', 'end', 'SNP')
+    conn <- dbConnect(RSQLite::SQLite(), dbSNP.file)
+    query.snps <- paste0('"', paste0(snps,  collapse='","'), '"')
+  
+    #TODO: Use dbbind() when new RSQLite (> 1.0) is published
+    query <- paste0('select V1,V2,V3,V4 from f where V4 in (', query.snps,')')
+    #check if the query length is longer than sqlite limit
+    if(nchar(query)>1e6) {
+      #TODO: split snps into smaller pieces
+      stop('dbSNP SQL query too long...')
+    }
+  
+    dbsnp <- dbGetQuery(conn, query)
+    dbDisconnect(conn)
+  
+    colnames(dbsnp) <- c('chr', 'start', 'end', 'SNP')
+    dbsnp
+  })
+  dbsnp <- do.call(rbind.data.frame, dbsnp)
 
   #all.y makes sure that all SNPs in CAD.SNP.df will be in returned data.table
   #if some dbSNP ids are not found in dbSNP file, NAs will be added
