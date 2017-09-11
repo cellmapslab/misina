@@ -171,7 +171,7 @@ get.hg19.positions <- function(CAD.SNP.df, dbSNP.file) {
 
     conn <- dbConnect(RSQLite::SQLite(), dbSNP.file)
     query.snps <- paste0('"', paste0(snps,  collapse='","'), '"')
-  
+
     #TODO: Use dbbind() when new RSQLite (> 1.0) is published
     query <- paste0('select V1,V2,V3,V4 from f where V4 in (', query.snps,')')
     #check if the query length is longer than sqlite limit
@@ -179,10 +179,10 @@ get.hg19.positions <- function(CAD.SNP.df, dbSNP.file) {
       #TODO: split snps into smaller pieces
       stop('dbSNP SQL query too long...')
     }
-  
+
     dbsnp <- dbGetQuery(conn, query)
     dbDisconnect(conn)
-  
+
     colnames(dbsnp) <- c('chr', 'start', 'end', 'SNP')
     dbsnp
   })
@@ -408,6 +408,7 @@ generate.final.table <- function(targets.gr, CAD.snps.gr, snp.mir.overlap.matrix
                             mir=overlapping.targets.gr[subjectHits(snps.in.seed)]$mir,
                             SNP.bwn.2.7=rep(T, length(snps.in.seed)),
                             stringsAsFactors = F)
+  snp.seed.df <- unique(snp.seed.df)
   final.table <- merge(final.table, snp.seed.df, by.x=c('SNP', 'mir'),
                        by.y=c('SNP', 'mir'), all.x=T)
   #move new column next to mir column
@@ -417,10 +418,10 @@ generate.final.table <- function(targets.gr, CAD.snps.gr, snp.mir.overlap.matrix
 
   #add one more column for SNP pos
   snps.rel.pos <- snp.relative.pos(overlapping.snps, overlapping.targets.gr)
-  snp.pos.df <- data.frame(SNP=overlapping.snps$SNP,
-                            mir=overlapping.targets.gr$mir,
-                            SNP.position.in.miR=snps.rel.pos,
-                            stringsAsFactors = F)
+  snp.pos.df <- unique(data.frame(SNP=overlapping.snps$SNP,
+                                 mir=overlapping.targets.gr$mir,
+                                 SNP.position.in.miR=snps.rel.pos,
+                                 stringsAsFactors = F))
   final.table <- merge(final.table, snp.pos.df, by.x=c('SNP', 'mir'),
                        by.y=c('SNP', 'mir'), all.x=T)
   #move new column next to mir column
