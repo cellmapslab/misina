@@ -1,18 +1,14 @@
 suppressPackageStartupMessages(library(dplyr))
-suppressPackageStartupMessages(library(RcppLevelDB))
 suppressPackageStartupMessages(library(grasp2db))
 
 suppressPackageStartupMessages(source('R/parse-SNP.R'))
 suppressPackageStartupMessages(source('R/snipe.R'))
 
 # input data files
-#dbsnp.file <- 'data/processed/dbsnp.leveldb'
 dbsnp.file <- 'data/processed/dbSNP.GRCh37.p13.build142.sqlite'
-#dbsnp.file <- '/storage/cmbstore/projects/misina/dbSNP.GRCh37.p13.build142.sqlite'
 
 #GTEx db
 gtexdb.file <- 'data/processed/GTExv6.sqlite'
-#gtexdb.file <- '/storage/cmbstore/projects/misina/GTExv6.sqlite'
 
 extract.snp.df <- function(inputs) {
 
