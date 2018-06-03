@@ -4,11 +4,11 @@ render.mir.expression <- function(mir) {
     fluidPage(
       fluidRow(
         column(6,
-          div(h2('miR Tissue Atlas'),
+          div(h4('miR Tissue Atlas'),
               render.miratlas(mir))
         ),
         column(6,
-          div(h2('miRmine'),
+          div(h4('miRmine'),
               render.mirmine(mir)
           )
         )
@@ -27,10 +27,10 @@ render.mirmine <- function(x) {
            aes(x=group, y=expression)) + 
       geom_boxplot() + 
       geom_point() + 
-      labs(x='Tissue', y='Expression') +
+      labs(x='Tissue', y=paste0('miRNA Expression (', x, ')')) +
       coord_flip() + 
       theme_minimal()
-  }, height = 700)
+  }, height = 400)
 }
 
 render.miratlas <- function(x) {
@@ -42,8 +42,8 @@ render.miratlas <- function(x) {
     ggplot(df, aes(x=tissue, y=expression)) + 
       geom_boxplot() + 
       geom_point() + 
-      labs(x='Tissue', y='Expression') +
+      labs(x='Tissue', y=paste0('miRNA Expression (', x, ')')) +
       coord_flip() + 
       theme_minimal()
-  }, height = 700)
+  }, height = 800)
 }
