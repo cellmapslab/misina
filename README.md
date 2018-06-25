@@ -1,5 +1,9 @@
 ## Misina: Finding microRNA-mediated effects of genetic variants with an integrative approach
 
+
+
+<img src="misina.png" width="600" />
+
 - Misina provides easy-to-use analysis for non-expert researchers seeking to investigate miRNA-mediated effects of genetic variants.
 - It ranks SNPs residing in miRNA binding sites of target genes using an integrative approach. 
 - Risk SNPs can be extended by those in high linkage disequilibrium. 
